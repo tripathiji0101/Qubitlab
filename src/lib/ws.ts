@@ -36,8 +36,16 @@ function useBaseWebSocket(url: string | null) {
 
     setState("connecting");
     const separator = url.includes("?") ? "&" : "?";
-    const ws = new WebSocket(`${url}${separator}token=${token}`);
-    wsRef.current = ws;
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(`${url}${separator}token=${token}`);
+      wsRef.current = ws;
+    } catch (err) {
+      console.warn("[WebSocket] Failed to connect:", err);
+      setState("disconnected");
+      wsRef.current = null;
+      return;
+    }
 
     ws.onopen = () => {
       setState("connected");
@@ -115,7 +123,23 @@ function useBaseWebSocket(url: string | null) {
 
 // ── Chat WebSocket Hook ──
 
-const WS_BASE = (import.meta.env.VITE_WS_URL || "ws://localhost:8000");
+function getWsBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_WS_URL;
+  if (typeof window !== "undefined") {
+    const isHttps = window.location.protocol === "https:";
+    if (envUrl) {
+      if (isHttps && envUrl.startsWith("ws://")) {
+        return envUrl.replace(/^ws:\/\//, "wss://");
+      }
+      return envUrl;
+    }
+    // Default to current host if in browser
+    return `${isHttps ? "wss:" : "ws:"}//${window.location.host}`;
+  }
+  return envUrl || "ws://localhost:8000";
+}
+
+const WS_BASE = getWsBaseUrl();
 
 export function useChatWebSocket() {
   const url = `${WS_BASE}/ws/chat`;

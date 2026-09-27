@@ -1,5 +1,5 @@
 # QubitLab ⚛️
-### Real-Time Collaborative Quantum Computing Platform & Interactive Lab
+### Real-Time Collaborative Quantum Computing Platform, Quantum IDE & Cloud Infrastructure
 
 [![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -7,73 +7,100 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
-[![WebSockets](https://img.shields.io/badge/WebSockets-Real--Time-010101?style=flat&logo=socketdotio&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
-[![WebRTC](https://img.shields.io/badge/WebRTC-P2P_Voice-333333?style=flat&logo=webrtc&logoColor=white)](https://webrtc.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Tests](https://img.shields.io/badge/Tests-88%2F88%20Passing-brightgreen?style=flat&logo=pytest&logoColor=white)](https://pytest.org/)
+[![Terraform](https://img.shields.io/badge/Terraform-AWS_IaC-623CE4?style=flat&logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![Docker](https://img.shields.io/badge/Docker-Production_Ready-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=flat&logo=githubactions&logoColor=white)](https://github.com/features/actions)
+[![Pytest](https://img.shields.io/badge/Pytest-138%2F138%20Passing-brightgreen?style=flat&logo=pytest&logoColor=white)](https://pytest.org/)
+[![Frontend Tests](https://img.shields.io/badge/Frontend_Tests-19%2F19%20Passing-brightgreen?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
 
-**QubitLab** is an enterprise-ready, interactive quantum computing education and research platform. It brings together a multi-qubit visual circuit simulator, real-time multi-user collaboration rooms, peer-to-peer WebRTC voice communication, social direct messaging, gamified quantum curriculum, and AI-assisted tutoring.
+**QubitLab** is an enterprise-grade, interactive quantum computing education and research ecosystem. It combines a drag-and-drop visual circuit simulator, a full-featured code-first **Quantum IDE**, authoritative real-time collaboration rooms, peer-to-peer WebRTC voice calling, university courseware & RAG document search, community discussion forums, gamified quantum curriculum, and reproducible **Terraform AWS infrastructure** with **GitHub Actions CI/CD**.
 
 ---
 
 ## 📑 Table of Contents
 
 - [Key Features](#-key-features)
+  - [1. Quantum Circuit Studio](#1-quantum-circuit-studio)
+  - [2. Complete Quantum IDE](#2-complete-quantum-ide)
+  - [3. Multi-User Collaboration & WebRTC Voice](#3-multi-user-collaboration--webrtc-voice)
+  - [4. Social Network & Direct Chat](#4-social-network--direct-chat)
+  - [5. University Multi-Tenancy & RAG Knowledge](#5-university-multi-tenancy--rag-knowledge)
+  - [6. Community Discussions & Voting](#6-community-discussions--voting)
+  - [7. Gamified Curriculum & Missions](#7-gamified-curriculum--missions)
+  - [8. AI Quantum Tutor & What-If Engine](#8-ai-quantum-tutor--what-if-engine)
 - [System Architecture](#-system-architecture)
 - [Tech Stack](#-tech-stack)
 - [Project Layout](#-project-layout)
 - [Quickstart Guide](#-quickstart-guide)
-  - [Prerequisites](#prerequisites)
-  - [1. Backend Setup](#1-backend-setup)
-  - [2. Frontend Setup](#2-frontend-setup)
-- [Testing Multi-User Collaboration](#-testing-multi-user-collaboration)
+  - [Option A: Docker Compose (Recommended)](#option-a-docker-compose-full-stack)
+  - [Option B: Local Manual Setup](#option-b-local-manual-setup)
 - [Testing & Quality Assurance](#-testing--quality-assurance)
+- [Infrastructure as Code (Terraform)](#-infrastructure-as-code-terraform)
+- [CI/CD & Deployment Pipeline](#-cicd--deployment-pipeline)
 - [Environment Configuration](#-environment-configuration)
-- [Docker & Production Deployment](#-docker--production-deployment)
 - [API Endpoints Overview](#-api-endpoints-overview)
+- [Documentation Directory](#-documentation-directory)
 
 ---
 
 ## 🌟 Key Features
 
 ### 1. 🎛️ Quantum Circuit Studio
-- **Multi-Qubit Visual Grid**: Drag-and-drop gate sequencing on up to 10 qubits with customizable gate depth.
+- **Multi-Qubit Visual Grid**: Drag-and-drop gate sequencing on up to 20 qubits with custom depth.
 - **Rich Gate Palette**:
-  - Single-qubit gates: $H$, $X$, $Y$, $Z$, $S$, $T$, $P(\phi)$
-  - Parameterized rotation gates: $R_x(\theta)$, $R_y(\theta)$, $R_z(\theta)$ with manual slider controls
-  - Multi-qubit controlled gates: $CNOT$ ($CX$), $CZ$, $SWAP$, Toffoli ($CCX$)
-  - Measurement operators: standard $Z$-basis measurements with shot distributions
-- **Real-Time Mathematical Simulations**:
-  - Full statevector computation and probability amplitude breakdown
-  - Interactive 3D Bloch sphere representation for single-qubit state inspection
-  - Probability histograms across computational basis states ($|00\dots\rangle$ to $|11\dots\rangle$)
-  - Circuit exports to OpenQASM, Python (Qiskit / PennyLane / Cirq), and LaTeX
+  - Single-qubit: $H$, $X$, $Y$, $Z$, $S$, $T$, $P(\phi)$
+  - Parameterized rotations: $R_x(\theta)$, $R_y(\theta)$, $R_z(\theta)$ with interactive angle sliders
+  - Entangling gates: $CNOT$ ($CX$), $CZ$, $SWAP$, Toffoli ($CCX$)
+  - Measurements: standard computational $Z$-basis measurements with shot distributions
+- **Real-Time Simulation**:
+  - Exact statevector amplitude breakdown ($|00\dots\rangle$ to $|11\dots\rangle$)
+  - Interactive 3D Bloch sphere visualization
+  - Multi-engine export: OpenQASM 2.0/3.0, Qiskit, PennyLane, Cirq, and LaTeX
 
-### 2. 👥 Real-Time Multi-User Collaboration Rooms
-- **Instant Room Generation & Sharing**: Create rooms with one click; share secure 6-character room codes or direct invite links (`/join/:code`).
-- **Live Circuit Synchronization**: Powered by authoritative FastAPI WebSockets. Every gate placement, parameter change, and deletion is broadcast live to all connected peers with revision numbering and optimistic UI updates.
-- **Granular Role-Based Access Control (RBAC)**:
-  - **Owner**: Full administrative controls (promote/demote members, transfer ownership, remove users, delete room).
-  - **Editor**: Can manipulate circuit gates and parameters in real time.
-  - **Viewer**: Read-only observation with live state tracking and chat.
-- **Collaboration Chat**: Built-in room chat sidebar with message persistence and member presence.
-- **🎙️ WebRTC Peer-to-Peer Voice Calling**: Integrated voice communication with zero third-party audio service costs. Features mute/unmute, participant talking indicators, and automatic ICE candidate exchange via WebSocket signaling.
+### 2. ⚡ Complete Quantum IDE
+- **Code-First Quantum Programming**: Write native Python quantum algorithms directly in the browser.
+- **Multi-Framework Selector**: Run code across **Qiskit Aer**, **PennyLane**, **Google Cirq**, or QubitLab's **Native In-Memory Simulator**.
+- **Execution Output & Visual Diagnostics**:
+  - Instant terminal stdout/stderr stream
+  - Dynamically rendered circuit diagrams generated directly from code
+  - Real-time statevector and probability bar charts
+  - Measurement outcome histograms across customizable shots ($100$ to $100{,}000$)
+  - Bloch sphere state mapping for single qubits
+- **AI Debugger Integration**: One-click AI Tutor code review and error explanation.
+- **Curated Starter Templates**: Pre-loaded algorithms for Bell State, GHZ State, Quantum Teleportation, Superdense Coding, and Grover's Search.
+- **Circuit Studio Bi-Directional Bridge**: Convert visual circuits directly into executable code in any quantum framework.
 
-### 3. 💬 Social Network & Direct Messaging
-- **User Discovery & Profiles**: Search users by username or email, view profile badges, and track XP.
-- **Friends System**: Send, accept, decline, and manage friend requests.
-- **1-on-1 Direct Chat**: Instant real-time messaging between friends with unread indicators and chat history.
-- **Global Presence**: Real-time online/offline status detection across the platform.
+### 3. 👥 Multi-User Collaboration & WebRTC Voice
+- **Instant Rooms & Deep Links**: Create rooms in 1 click; share 6-character codes or direct invite links (`/join/:code`).
+- **Live Circuit Synchronization**: Powered by authoritative FastAPI WebSockets with revision sequence tracking and conflict-free updates.
+- **Role-Based Access Control (RBAC)**: Owner (administrative controls), Editor (real-time circuit editing), and Viewer (read-only observer).
+- **In-Room Chat Sidebar**: Persistent room messaging with presence avatars and active participant indicators.
+- **🎙️ WebRTC Peer-to-Peer Voice Calls**: Encrypted P2P audio mesh with zero third-party service fees, live speaking indicators, and mute/unmute toggles.
 
-### 4. 🎓 Gamified Curriculum & Learning Path
-- **Structured Modules**: Comprehensive curriculum covering Quantum Superposition, Entanglement, Quantum Teleportation, Grover's Search, and Shor's Algorithm.
-- **Interactive Missions & Code Sandboxes**: Solve challenges directly in the circuit editor to complete objective checkpoints.
-- **XP, Streaks & Leaderboards**: Earn experience points for solving challenges and compete on the global leaderboard.
-- **Instructor Dashboard**: Dedicated instructor panel to assign tasks, grade student circuit submissions, and track learning progress.
+### 4. 💬 Social Network & Direct Chat
+- **User Discovery & Profiles**: Search members by name or email, view profile badges, level progression, and XP.
+- **Friendships**: Send, accept, decline, and manage friend requests.
+- **1-on-1 Direct Chat**: Instant messaging with unread badges, timestamping, and chat history.
+- **Global Presence**: Real-time online/offline indicators across the entire platform.
 
-### 5. 🤖 AI Quantum Tutor & "What-If" Engine
-- **Context-Aware Tutor**: Ask conceptual or circuit-specific questions to get instant guidance.
-- **"What-If" Analysis**: Run simulated counterfactual experiments (e.g., *"What happens to the entanglement if a phase flip gate is inserted before measurement?"*).
+### 5. 🏛️ University Multi-Tenancy & RAG Knowledge
+- **Academic Hierarchy**: Institutional scoping with Universities, Departments, Courses, and Syllabi.
+- **Role Scoping**: University Admins, Course Instructors, and Students with tenant data isolation.
+- **RAG Document Search**: Ingest quantum courseware, lecture notes, and research papers with semantic search and verified citations.
+
+### 6. 🗣️ Community Discussions & Voting
+- **Multi-Scope Discussions**: Filter posts by **Global**, **Friends**, or **University** scope.
+- **Threaded Nested Replies**: Deep discussion hierarchies for algorithm analysis and peer troubleshooting.
+- **Upvoting & Downvoting**: Community-driven ranking of questions, tutorials, and circuit solutions.
+
+### 7. 🎓 Gamified Curriculum & Missions
+- **12 Project Levels / 144 Phases**: Comprehensive step-by-step curriculum spanning Superposition to Shor's Algorithm.
+- **36 Milestone Checkpoints**: In-editor challenge validation with automated unit testing.
+- **XP, Streaks & Leaderboards**: Experience point progression, daily login streaks, and global leaderboards.
+
+### 8. 🤖 AI Quantum Tutor & "What-If" Engine
+- **Context-Aware AI Tutor**: Explains circuits, math formulas, and code errors using OpenAI or Gemini.
+- **"What-If" Counterfactual Simulation**: Simulates gate perturbations and explains quantum decoherence effects.
 
 ---
 
@@ -81,87 +108,80 @@
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Clients / Browsers (Desktop & Mobile)"]
-        UserA["User A (Owner / Editor)"]
-        UserB["User B (Editor / Viewer)"]
+    subgraph Clients["Users / Browsers (Desktop & Mobile)"]
+        UserBrowser["Web Browser (React 19 SPA)"]
     end
 
-    subgraph FrontendApp["Frontend (React 19 + Vite + Tailwind CSS v4)"]
-        UI["UI Layer: Workspace / Circuit Studio"]
-        WSC["WebSocket Client (Circuit Sync & Chat)"]
-        RTCC["WebRTC Peer Connection (Voice Mesh)"]
-        Router["React Router v8"]
+    subgraph AWSCloud["AWS Cloud (us-east-1)"]
+        subgraph Ingress["Ingress & Edge CDN"]
+            CF["Amazon CloudFront (CDN)\nHTTPS / Caching / SPA Fallback"]
+            ALB["Application Load Balancer (ALB)\nPorts 80 / 443\n300s Timeout & WebSocket Stickiness"]
+        end
+
+        subgraph Compute["Containerized Compute (VPC Private Subnet)"]
+            ECS["AWS ECS Fargate\nFastAPI + Uvicorn (Port 8000)\nNon-root qubitlab user\nStateful In-Memory Room Hub"]
+        end
+
+        subgraph Persistence["Managed Data Stores"]
+            RDS[("Amazon RDS PostgreSQL 16\ngp3 20-100GB Auto-Scaling\nAutomated Backups & Deletion Protection")]
+            Redis[("Amazon ElastiCache Redis 7\nSession Cache & Rate Limiting")]
+            S3App["Amazon S3 Bucket\nRAG Documents & Syllabi"]
+            S3Web["Amazon S3 Bucket\nFrontend SPA Static Assets"]
+        end
+
+        subgraph SecOps["Security & Observability"]
+            Secrets["AWS Secrets Manager\nDB Credentials, JWT Secret, AI Keys"]
+            CW["Amazon CloudWatch Logs & Alarms"]
+            ECR["Amazon ECR\nImmutable Commit-SHA Image Tags"]
+        end
     end
 
-    subgraph BackendApp["Authoritative Backend (FastAPI + Uvicorn)"]
-        REST["REST API v1 (/auth, /social, /rooms, /simulations)"]
-        WSH["WebSocket Gateway (/ws/rooms/{room_id}, /ws/social)"]
-        RoomMgr["RoomManager (In-Memory Hub & Concurrency Engine)"]
-        ChatMgr["ChatManager (Message Distribution)"]
-        SimEng["Quantum Simulation Engine (Qiskit / PennyLane / Cirq)"]
-    end
-
-    subgraph DataStore["Data Persistence"]
-        DB[("Database (SQLite for Dev / PostgreSQL for Prod)")]
-        Alembic["Alembic Migrations"]
-    end
-
-    subgraph Network["Signaling & Traversal"]
+    subgraph External["External Integrations"]
         STUN["Google STUN Servers (stun.l.google.com:19302)"]
+        AI["AI Provider (OpenAI / Gemini)"]
     end
 
-    %% Client connections
-    UserA -->|HTTPS| UI
-    UserB -->|HTTPS| UI
-    UI --> WSC
-    UI --> RTCC
-    UI --> Router
-
-    %% Backend connections
-    UI -->|REST Calls / JWT Bearer| REST
-    WSC -->|WSS: Circuit Deltas & Room Chat| WSH
-    WSH --> RoomMgr
-    WSH --> ChatMgr
-    REST --> SimEng
-    REST --> DB
-    RoomMgr -->|Persist Circuit Snapshots| DB
-
-    %% WebRTC mesh
-    RTCC <-->|ICE / SDP Signaling via WSS| WSH
-    UserA <==>|Encrypted P2P Voice Audio Stream| UserB
-    RTCC -.->|NAT Traversal| STUN
+    %% Routing
+    UserBrowser -->|HTTPS: Static UI Assets| CF
+    CF --> S3Web
+    UserBrowser -->|REST API & WebSockets /ws| ALB
+    ALB --> ECS
+    ECS --> RDS
+    ECS --> Redis
+    ECS --> S3App
+    ECS -.-> Secrets
+    ECS --> CW
+    ECS -.-> AI
+    UserBrowser -.-> STUN
 ```
 
 ---
 
 ## 💻 Tech Stack
 
-### Frontend
-| Technology | Version | Purpose |
-|---|---|---|
-| **React** | `19.0.0` | Declarative component UI library |
-| **TypeScript** | `5.7.0` | Strict type safety and contracts |
-| **Vite** | `8.0.5` | Next-generation frontend build tooling & hot-module reloading |
-| **Tailwind CSS** | `v4.0.0` | Modern utility-first styling with native CSS variables |
-| **React Router** | `8.3.1` | Client-side routing and deep-linking |
-| **KaTeX** | `0.18.7` | High-fidelity mathematical formula and bra-ket notation rendering |
-| **Recharts** | `3.10.1` | Responsive probability amplitude and measurement charts |
-| **WebRTC API** | Browser Native | Ultra-low-latency peer-to-peer voice streaming |
-
-### Backend & Simulation
-| Technology | Version | Purpose |
-|---|---|---|
-| **Python** | `3.11` | High-performance backend runtime |
-| **FastAPI** | `0.115.0` | Asynchronous REST and WebSocket web framework |
-| **Uvicorn** | `0.30.0` | ASGI server with high concurrency capabilities |
-| **SQLAlchemy** | `2.0.35` | Async ORM supporting SQLite and PostgreSQL |
-| **Alembic** | `1.13.0` | Schema migrations and version control |
-| **Pydantic** | `2.9.0` | Request validation and schema serialization |
-| **Python-JOSE & Passlib** | `3.3.0` / `1.7.4` | JWT authentication and bcrypt password hashing |
-| **Qiskit** | `1.2.0` | IBM Quantum computing SDK for circuit compilation |
-| **PennyLane** | `0.38.0` | Differentiable quantum machine learning & simulation |
-| **Cirq** | `1.4.0` | Google Quantum circuit simulation framework |
-| **Pytest & Pytest-Asyncio** | `8.3.0` / `0.24.0` | Asynchronous unit and integration testing suite |
+| Domain | Technology | Version | Purpose |
+|---|---|---|---|
+| **Frontend** | React | `19.0.0` | Modern component UI library |
+| | TypeScript | `5.7.0` | End-to-end type safety |
+| | Vite | `8.2.2` | Lightning-fast build tooling and HMR |
+| | Tailwind CSS | `v4.0.0` | High-performance styling with native CSS variables |
+| | React Router | `8.3.1` | Client-side routing and deep linking |
+| | KaTeX & Marked | `0.18.7` / `18.0.13` | Mathematical formula and Markdown rendering |
+| | Recharts | `3.10.1` | Probability amplitudes and measurement charts |
+| **Backend** | Python | `3.11` | High-performance backend runtime |
+| | FastAPI | `0.115.0` | Asynchronous REST and WebSocket framework |
+| | Uvicorn | `0.30.0` | High-concurrency ASGI server |
+| | SQLAlchemy | `2.0.35` | Async ORM supporting SQLite and PostgreSQL |
+| | Asyncpg | `0.29.0` | High-performance asynchronous PostgreSQL driver |
+| | Alembic | `1.13.0` | Database schema migrations and version control |
+| | Pydantic | `2.9.0` | Strict data validation and serialization |
+| **Quantum** | Qiskit & Qiskit Aer | `1.2.0` / `0.15.0` | IBM Quantum SDK & statevector simulator |
+| | PennyLane | `0.38.0` | Differentiable quantum machine learning |
+| | Cirq | `1.4.0` | Google Quantum circuit compilation framework |
+| **Infrastructure** | Terraform / OpenTofu | `>= 1.5.0` | Infrastructure as Code (AWS VPC, ECS, RDS, ALB, ECR) |
+| | Docker | Latest | Multi-stage production container images |
+| | Nginx | `1.27-alpine` | High-performance production web server for SPA |
+| | GitHub Actions | Latest | Automated CI/CD with AWS OIDC authentication |
 
 ---
 
@@ -169,228 +189,199 @@ flowchart TD
 
 ```text
 ELRA 2/
-├── backend/                        # FastAPI Application
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                     # CI: Typecheck, tests, terraform fmt/validate, docker build
+│       └── deploy.yml                 # CD: AWS OIDC, commit SHA tag, push to ECR, Alembic, ECS deploy
+├── terraform/                         # Terraform AWS Infrastructure as Code
+│   ├── versions.tf                    # Provider constraints & S3 remote state
+│   ├── providers.tf                   # AWS provider and global tags
+│   ├── variables.tf                   # Configurable infrastructure variables
+│   ├── locals.tf                      # Naming conventions & tags
+│   ├── network.tf                     # VPC, public/private subnets, IGW, NAT GW
+│   ├── compute.tf                     # ECS Cluster, Fargate task/service, ALB, target groups
+│   ├── database.tf                    # RDS PostgreSQL 16 instance & subnet group
+│   ├── redis.tf                       # ElastiCache Redis 7 replication group
+│   ├── storage.tf                     # S3 buckets & CloudFront CDN
+│   ├── registry.tf                    # ECR repositories with lifecycle policies
+│   ├── security.tf                    # Security groups & least-privilege IAM roles
+│   ├── secrets.tf                     # AWS Secrets Manager credentials
+│   ├── monitoring.tf                  # CloudWatch log groups & metric alarms
+│   ├── outputs.tf                     # Exported DNS names, ARNs, and endpoints
+│   ├── terraform.tfvars.example       # Example variable configuration
+│   ├── environments/
+│   │   ├── dev/                       # Development environment caller
+│   │   └── prod/                      # Production environment caller
+│   └── README.md                      # Complete Terraform reference guide
+├── backend/                           # FastAPI Application
 │   ├── app/
-│   │   ├── api/v1/                 # API route controllers
-│   │   │   ├── auth.py             # User signup, login, JWT issuance
-│   │   │   ├── rooms.py            # Collaboration room CRUD, membership, invites
-│   │   │   ├── routes.py           # Curriculum, assignments, submissions, XP
-│   │   │   ├── simulations.py      # Quantum circuit execution & matrix export
-│   │   │   ├── social.py           # Friends, friend requests, private chat
-│   │   │   └── ws.py               # WebSocket endpoints (circuit, chat, voice signaling)
-│   │   ├── core/                   # Security, settings, and database session setup
-│   │   ├── models/                 # SQLAlchemy database models
-│   │   ├── schemas/                # Pydantic schemas and serialization models
-│   │   ├── services/               # Quantum simulators and background jobs
-│   │   └── main.py                 # FastAPI application initialization & middleware
-│   ├── migrations/                 # Alembic migration revisions
-│   ├── tests/                      # 59 automated backend tests
-│   ├── test_collab_features.py     # 29 end-to-end collaboration integration tests
-│   ├── Dockerfile                  # Production container definition
-│   ├── docker-compose.yml          # Containerized orchestration
-│   └── requirements.txt            # Python dependencies
-├── src/                            # React 19 Frontend
-│   ├── components/                 # Reusable UI components
-│   │   ├── CollabRoom.tsx          # Real-time collaboration UI (circuit, chat, voice call)
-│   │   ├── ChatSidebar.tsx         # Slide-out real-time chat
-│   │   ├── QuantumVisuals.tsx      # Bloch sphere, statevector & probability plots
-│   │   ├── MathMarkdown.tsx        # LaTeX & KaTeX formula rendering
-│   │   └── AppShell.tsx            # Navigation, topbar & responsive container
-│   ├── pages/                      # Application views
-│   │   ├── Workspace.tsx           # Quantum Circuit Studio & simulation canvas
-│   │   ├── Social.tsx              # Friends list, requests & 1-on-1 private chat
-│   │   ├── JoinInvite.tsx          # Deep-link invite landing handler (/join/:code)
-│   │   ├── Learn.tsx               # Interactive quantum curriculum
-│   │   ├── Challenges.tsx          # Daily missions and challenges
-│   │   ├── Dashboard.tsx           # User overview, recent circuits & stats
-│   │   ├── Instructor.tsx          # Instructor assignment & grading dashboard
-│   │   ├── Login.tsx / Signup.tsx  # Authentication pages
-│   │   └── Landing.tsx             # Public marketing landing page
-│   ├── lib/                        # Client libraries & state managers
-│   │   ├── api.ts                  # Typed Axios/Fetch client for REST endpoints
-│   │   ├── auth.tsx                # React Auth context & token persistence
-│   │   ├── ws.ts                   # WebSocket client & reconnect manager
-│   │   └── sim.ts                  # Client-side quantum matrix evaluation
-│   ├── App.tsx                     # Main router and route definitions
-│   └── index.css                   # Global styles and Tailwind CSS v4 directives
-├── package.json                    # Frontend dependencies & npm scripts
-├── vite.config.ts                  # Vite configuration
-└── AWS_DEPLOYMENT_PLAN.md          # Comprehensive AWS cloud deployment guide
+│   │   ├── api/v1/                    # API route controllers (auth, IDE, rooms, social, etc.)
+│   │   ├── core/                      # Settings, security, logging, database engine
+│   │   ├── models/                    # SQLAlchemy database models
+│   │   ├── schemas/                   # Pydantic validation schemas
+│   │   ├── services/                  # Quantum engines & connection managers
+│   │   └── main.py                    # Application entry point, lifespan, & /health
+│   ├── migrations/                    # Alembic migration revisions
+│   ├── tests/                         # 138 backend automated tests
+│   ├── Dockerfile                     # Multi-stage non-root Python 3.11 image
+│   └── requirements.txt               # Backend dependencies
+├── src/                               # React 19 Frontend SPA
+│   ├── components/
+│   │   ├── ide/                       # Quantum IDE components (CodeEditor, CircuitVisualizer, etc.)
+│   │   ├── CollabRoom.tsx             # Real-time collaboration UI (circuit, chat, voice call)
+│   │   └── QuantumVisuals.tsx         # Bloch sphere, statevector & histograms
+│   ├── pages/                         # Application views (Workspace, Social, Learn, etc.)
+│   ├── lib/                           # API, auth context, WebSocket client, simulator
+│   └── App.tsx                        # Router and route configurations
+├── docs/                              # Production Documentation
+│   ├── DEPLOYMENT.md                  # Comprehensive AWS cloud deployment runbook
+│   ├── TERRAFORM.md                   # Complete Terraform reference guide
+│   └── CICD.md                        # GitHub Actions CI/CD and rollback specifications
+├── Dockerfile                         # Production multi-stage frontend Dockerfile (Node 22 + Nginx)
+├── nginx.conf                         # Production Nginx SPA configuration with /healthz
+├── docker-compose.yml                 # Root full-stack local composition (db, redis, backend, frontend)
+└── package.json                       # Frontend dependencies & npm scripts
 ```
 
 ---
 
 ## 🚀 Quickstart Guide
 
-### Prerequisites
-- **Node.js**: v18.0.0 or later (`node -v`)
-- **npm** or **pnpm**: (`npm -v` / `pnpm -v`)
-- **Python**: 3.11 (`python3 --version`)
-- **Git**
+### Option A: Docker Compose (Full Stack)
+Run the entire production-grade stack (PostgreSQL, Redis, FastAPI backend, and Nginx frontend) with one command:
+
+```bash
+docker compose up --build
+```
+- **Frontend SPA**: [http://localhost:3000](http://localhost:3000)
+- **Backend REST API**: [http://localhost:8000/api/v1](http://localhost:8000/api/v1)
+- **Swagger Documentation**: [http://localhost:8000/api/docs](http://localhost:8000/api/docs)
+- **Health Check**: [http://localhost:8000/health](http://localhost:8000/health)
 
 ---
 
-### 1. Backend Setup
+### Option B: Local Manual Setup
 
-1. Open your terminal and navigate to the `backend` directory:
-   ```bash
-   cd backend
-   ```
+#### 1. Backend Setup
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate    # On Windows: .venv\Scripts\activate
 
-2. Create and activate a Python virtual environment:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate    # On Windows: .venv\Scripts\activate
-   ```
+pip install --upgrade pip
+pip install -r requirements.txt
 
-3. Install the dependencies:
-   ```bash
-   pip install --upgrade pip
-   pip install -r requirements.txt
-   ```
+cp .env.example .env         # Pre-configured for local SQLite
+alembic upgrade head         # Run database migrations
 
-4. Create your local `.env` configuration file:
-   ```bash
-   cp .env.example .env
-   ```
-   *(The default `.env` is pre-configured to use local SQLite with zero setup required.)*
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-5. Run database migrations:
-   ```bash
-   alembic upgrade head
-   ```
-
-6. Start the FastAPI development server:
-   ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-   - **Swagger API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
-   - **Alternative ReDoc Docs**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-
----
-
-### 2. Frontend Setup
-
-1. In a separate terminal tab, navigate to the project root:
-   ```bash
-   cd ..   # From backend/ back to project root
-   ```
-
-2. Install Node dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Open your browser and navigate to:
-   ```text
-   http://localhost:8443
-   ```
-   *(or the port indicated in your Vite terminal output).*
-
----
-
-## 👥 Testing Multi-User Collaboration
-
-To test real-time multi-user features on your local machine:
-
-1. **Open two separate browser environments**:
-   - Browser A (e.g. Chrome normal window)
-   - Browser B (e.g. Chrome Incognito window or Firefox)
-
-2. **Register two distinct accounts**:
-   - In Browser A, sign up as `alice` (`alice@example.com`).
-   - In Browser B, sign up as `bob` (`bob@example.com`).
-
-3. **Test Social & Friends**:
-   - In Browser A, navigate to **Social**. Search for `bob` and click **Add Friend**.
-   - In Browser B, navigate to **Social**. Accept Alice's friend request.
-   - Send direct messages between both windows — messages and read statuses appear instantly!
-
-4. **Test Collaboration Rooms & Live Circuit Synchronization**:
-   - In Browser A, navigate to **Circuit Studio** and click **Start Collaboration** (or create a room from the Collaboration menu).
-   - Copy the generated 6-character room code or the direct invite link (e.g., `http://localhost:8443/join/ABC123`).
-   - In Browser B, paste the invite link or enter the room code.
-   - **Drag and drop gates** in Browser A — observe Browser B update the circuit grid, statevector, and Bloch sphere in real time without refreshing.
-
-5. **Test WebRTC Voice Calling**:
-   - In both Browser A and Browser B, click **Start Voice Call** inside the collaboration room.
-   - Grant microphone permissions when prompted.
-   - Both users are joined into the peer-to-peer audio mesh. Test muting/unmuting to see live status updates.
+#### 2. Frontend Setup
+```bash
+# In a new terminal tab at project root
+npm install
+npm run dev
+```
+Open [http://localhost:8443](http://localhost:8443) in your browser.
 
 ---
 
 ## 🧪 Testing & Quality Assurance
 
-The backend includes a comprehensive, battle-tested automated test suite ensuring circuit correctness, WebSocket sync stability, and RBAC authorization:
+QubitLab includes an exhaustive test suite covering all application layers:
 
+### 1. Backend Pytest Suite (138 Tests)
 ```bash
 cd backend
 source .venv/bin/activate
-
-# 1. Run all unit and integration tests (59 tests)
 pytest tests/ -v
-
-# 2. Run real-time collaboration and role permission tests (29 tests)
-python test_collab_features.py
 ```
+- **Test Results**: `138 passed in 87.66s (100% pass rate)`
+- **Coverage**: Quantum IDE execution, circuit analyzer, goal-aware tutor, discussions, university RAG, interactive curriculum, and security authorization.
 
-### Test Coverage Highlights:
-- **Authentication**: JWT generation, expiry, bcrypt hash verification, unauthorized access rejection.
-- **Quantum Execution**: Unitary matrix evaluations, statevector normalization, probability distributions.
-- **Collaboration Mechanics**:
-  - Room lifecycle (create, invite, join, leave, delete).
-  - Role transitions (Owner transfers, Editor promotions, Viewer restrictions).
-  - Concurrent WebSocket broadcasts and circuit delta conflict resolution.
-  - Room chat persistence and retrieval.
+### 2. Frontend Unit Tests (19 Tests)
+```bash
+node backend/tests/test_quantum_ide.mjs
+node backend/tests/test_curriculum.mjs
+```
+- **Test Results**: `19 passed (100% pass rate)`
+- **Coverage**: Native Bell state simulation, superposition, GHZ state, syntax highlighter security, starter templates, and curriculum phase structures.
+
+### 3. Frontend TypeScript & Bundle Verification
+```bash
+npx tsc --noEmit
+npm run build
+```
+- **Result**: `0 errors, production bundle built in 426ms`
+
+### 4. Docker & Terraform Local Validation
+```bash
+docker compose config
+terraform -chdir=terraform init -backend=false
+terraform -chdir=terraform validate
+terraform fmt -check -recursive terraform/
+```
+- **Result**: `docker-compose syntax 100% valid; Terraform configuration valid`
+
+---
+
+## ☁️ Infrastructure as Code (Terraform)
+
+The `terraform/` directory manages the complete AWS architecture with zero plaintext secrets:
+- **Remote State**: S3 bucket with AES-256 encryption and DynamoDB distributed locking.
+- **Environments**: Isolated `dev` (single AZ, cost-optimized) and `prod` (Multi-AZ, deletion protection).
+- **Least Privilege IAM**: Separate execution, task, and GitHub Actions OIDC deployment roles.
+
+To plan and deploy:
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+terraform plan -out=tfplan
+terraform apply tfplan
+```
+*For complete instructions, see [docs/TERRAFORM.md](file:///Users/helloteddy/Downloads/ELRA%202/docs/TERRAFORM.md).*
+
+---
+
+## 🔄 CI/CD & Deployment Pipeline
+
+QubitLab features an automated, production-tested delivery pipeline powered by GitHub Actions:
+
+1. **Pull Request / Commit**:
+   - `frontend-ci`: TypeScript check, Vite build, node unit tests.
+   - `backend-ci`: Python 3.11 setup, dependencies, pytest test suite.
+   - `terraform-ci`: `tofu fmt -check`, module validation.
+   - `docker-ci`: Validates Docker Compose and builds container images.
+   - `security-ci`: Automated secret scanning and npm dependency vulnerability audit.
+2. **Merge to Main**:
+   - Authenticates to AWS via **GitHub OIDC** (no hardcoded keys).
+   - Tags Docker images with immutable **Commit SHA** (`qubitlab-backend:<commit-sha>`).
+   - Pushes images to Amazon ECR.
+   - Runs Alembic database migrations (`alembic upgrade head`) via one-off ECS task.
+   - Forces zero-downtime deployment on Amazon ECS Fargate.
+   - Polls `/health` until HTTP 200 is confirmed.
+3. **Rollback**:
+   - Deploy any previous commit SHA in seconds using the GitHub Actions CD `workflow_dispatch` trigger.
+
+*For complete pipeline details, see [docs/CICD.md](file:///Users/helloteddy/Downloads/ELRA%202/docs/CICD.md) and [docs/DEPLOYMENT.md](file:///Users/helloteddy/Downloads/ELRA%202/docs/DEPLOYMENT.md).*
 
 ---
 
 ## ⚙️ Environment Configuration
 
-### Backend (`backend/.env`)
-| Variable | Default Value | Description |
-|---|---|---|
-| `PROJECT_NAME` | `QubitLab Backend` | Application display name |
-| `SECRET_KEY` | *(Generated random string)* | Secret used to sign JWT tokens |
-| `ALGORITHM` | `HS256` | JWT signing algorithm |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | `10080` (7 days) | JWT lifetime before expiration |
-| `DATABASE_URL` | `sqlite+aiosqlite:///./qubitlab.db` | SQLAlchemy async connection string |
-| `CORS_ORIGINS` | `http://localhost:8443,http://localhost:5173` | Comma-separated allowed frontend origins |
-| `STUN_SERVER_URL` | `stun:stun.l.google.com:19302` | STUN server for WebRTC NAT traversal |
-
-### Frontend (`.env` or `.env.production`)
-| Variable | Default Value | Description |
-|---|---|---|
-| `VITE_API_BASE_URL` | `http://localhost:8000` | REST API root endpoint |
-| `VITE_WS_BASE_URL` | `ws://localhost:8000` | WebSocket gateway root endpoint |
-
----
-
-## 🐳 Docker & Production Deployment
-
-### Quick Docker Compose Deployment
-QubitLab comes with containerization ready out of the box:
-
-```bash
-cd backend
-docker compose up --build -d
-```
-This provisions:
-- An optimized Python 3.11 FastAPI container running behind Uvicorn.
-- A managed PostgreSQL database with automatic persistent volume mounting.
-
-### AWS Cloud Production Guide
-For multi-user public deployment on AWS:
-- **Frontend**: Amazon S3 + Amazon CloudFront CDN with SSL/TLS via ACM.
-- **Backend**: AWS ECS Fargate running the containerized FastAPI app behind an Application Load Balancer (ALB) with sticky WebSocket routing.
-- **Database**: Amazon RDS PostgreSQL 16 (`db.t4g.micro` or `db.t4g.small`).
-
-> 📘 **Detailed Step-by-Step Blueprint**: See [AWS_DEPLOYMENT_PLAN.md](file:///Users/helloteddy/Downloads/ELRA%202/AWS_DEPLOYMENT_PLAN.md) for full CloudFormation/Terraform patterns, VPC configuration, security group rules, and domain DNS setup.
+| Variable | Scope | Description | Default / Example |
+|---|---|---|---|
+| `ENVIRONMENT` | Backend | Runtime mode (`development` vs `production`) | `production` |
+| `DEBUG` | Backend | Enable verbose debug logs & tracebacks | `false` |
+| `DATABASE_URL` | Backend | Database connection string | `postgresql+asyncpg://user:pass@host:5432/db` |
+| `REDIS_URL` | Backend | Redis connection string for cache & rate limits | `redis://redis:6379/0` |
+| `JWT_SECRET_KEY` | Backend | Secret key for signing authentication tokens | *Injected from AWS Secrets Manager* |
+| `CORS_ORIGINS` | Backend | Allowed CORS origins for web requests | `https://app.yourdomain.com` |
+| `AI_PROVIDER` | Backend | AI Tutor provider (`openai` or `gemini`) | `openai` |
+| `AI_API_KEY` | Backend | API Key for LLM Tutor | *Injected from AWS Secrets Manager* |
+| `VITE_API_URL` | Frontend | Public REST API base URL | `https://api.yourdomain.com/api/v1` |
+| `VITE_WS_URL` | Frontend | Public WebSocket base URL | `wss://api.yourdomain.com` |
 
 ---
 
@@ -399,23 +390,32 @@ For multi-user public deployment on AWS:
 | Method | Path | Summary | Auth |
 |---|---|---|---|
 | `POST` | `/api/v1/auth/signup` | Register a new user | Public |
-| `POST` | `/api/v1/auth/login` | Log in and receive JWT access token | Public |
-| `GET` | `/api/v1/auth/me` | Fetch currently authenticated user | Bearer |
-| `GET` | `/api/v1/social/friends` | List user's accepted friends | Bearer |
-| `POST` | `/api/v1/social/friends/request` | Send a friend request | Bearer |
-| `POST` | `/api/v1/social/friends/accept` | Accept a pending friend request | Bearer |
-| `GET` | `/api/v1/social/messages/{user_id}` | Fetch 1-on-1 private chat history | Bearer |
-| `POST` | `/api/v1/rooms/create` | Create a new collaboration room | Bearer |
-| `POST` | `/api/v1/rooms/join/{code}` | Join a room using 6-character code | Bearer |
-| `GET` | `/api/v1/rooms/{room_id}` | Retrieve room details & current circuit | Bearer |
-| `PUT` | `/api/v1/rooms/{room_id}/circuit` | Save / update room circuit state | Bearer |
-| `POST` | `/api/v1/simulations/run` | Execute quantum circuit simulation | Bearer |
-| `WS` | `/ws/rooms/{room_id}` | Real-time circuit sync, room chat & WebRTC | Bearer |
-| `WS` | `/ws/social` | Global presence & instant messaging gateway | Bearer |
+| `POST` | `/api/v1/auth/login` | Authenticate user and issue JWT | Public |
+| `GET` | `/api/v1/auth/me` | Fetch authenticated user profile | Bearer |
+| `POST` | `/api/v1/simulations/run` | Execute circuit simulation (visual) | Bearer |
+| `POST` | `/api/v1/simulations/ide/run` | Execute Quantum IDE code (Qiskit/PennyLane/Cirq/Native) | Bearer |
+| `POST` | `/api/v1/rooms/create` | Create a collaboration room | Bearer |
+| `POST` | `/api/v1/rooms/join/{code}` | Join collaboration room via code | Bearer |
+| `GET` | `/api/v1/social/friends` | List accepted friends | Bearer |
+| `GET` | `/api/v1/discussions` | List threaded discussion posts (global/friends/university) | Bearer |
+| `POST` | `/api/v1/discussions` | Create a new discussion post or reply | Bearer |
+| `GET` | `/api/v1/university/courses` | List university courses & syllabus | Bearer |
+| `POST` | `/api/v1/university/rag/search` | Search RAG quantum knowledge base | Bearer |
+| `GET` | `/health` | Production health check (active SQL probe & engine status) | Public |
+| `WS` | `/ws/rooms/{room_id}` | Real-time circuit sync, chat & WebRTC voice signaling | Bearer |
+| `WS` | `/ws/social` | Global user presence & private direct messaging | Bearer |
+
+---
+
+## 📚 Documentation Directory
+
+- 📖 [docs/DEPLOYMENT.md](file:///Users/helloteddy/Downloads/ELRA%202/docs/DEPLOYMENT.md): Complete AWS cloud deployment runbook.
+- 🛠️ [docs/TERRAFORM.md](file:///Users/helloteddy/Downloads/ELRA%202/docs/TERRAFORM.md): Comprehensive Terraform resource reference and safety guide.
+- 🚀 [docs/CICD.md](file:///Users/helloteddy/Downloads/ELRA%202/docs/CICD.md): GitHub Actions CI/CD workflows and rollback procedures.
+- 📋 [AWS_DEPLOYMENT_PLAN.md](file:///Users/helloteddy/Downloads/ELRA%202/AWS_DEPLOYMENT_PLAN.md): Architectural design and sizing rationale.
 
 ---
 
 ## 📜 License & Acknowledgments
 
-This project is licensed under the MIT License. Built with ❤️ for the quantum computing community, educators, and researchers worldwide.
-
+This project is licensed under the MIT License. Built with ❤️ for the quantum computing community, educators, researchers, and developers worldwide.

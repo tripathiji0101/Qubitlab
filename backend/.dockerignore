@@ -1,0 +1,17 @@
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov/
+tests/
+.git
+.gitignore
+docker-compose.yml
+Dockerfile

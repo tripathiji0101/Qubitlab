@@ -1,0 +1,2 @@
+University Custom Policy Document:
+At Grounding Univ, students must always initialize ancilla qubits on register wire q2 using an X gate before beginning Phase Estimation.

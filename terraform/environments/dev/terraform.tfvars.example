@@ -1,0 +1,5 @@
+aws_region          = "us-east-1"
+github_repository   = "tripathiji0101/Qubitlab"
+container_image_tag = "latest"
+ai_provider         = ""
+ai_api_key          = ""

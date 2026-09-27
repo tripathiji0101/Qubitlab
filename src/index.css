@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+@import 'katex/dist/katex.min.css';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Clean Technical Dark Palette */
+  --color-bg-app: #18191c;
+  --color-bg-surface: #222327;
+  --color-bg-panel: #2a2b31;
+  --color-bg-canvas: #1a1b1f; /* Dedicated circuit canvas surface */
+  --color-bg-inset: #15161a; /* Deeper inset for results/panels */
+  
+  --color-accent-blue: #60a5fa;
+  --color-accent-primary: #3b82f6; 
+  --color-accent-green: #10b981;
+  
+  --color-line: #37383f;
+  --color-line-strong: #4f515a;
+  --color-line-subtle: #2c2d33; /* Lighter divider for reduced noise */
+
+  --color-txt: #f8fafc;
+  --color-txt-dim: #94a3b8;
+  --color-txt-faint: #64748b;
+
+  --color-ok: #10b981;
+  --color-warn: #f59e0b;
+  --color-danger: #ef4444;
+
+  --color-quantum-cyan: #35e0d8;
+  --color-quantum-blue: #4d7cfe;
+  --color-quantum-purple: #9b6bff;
+  --color-quantum-magenta: #e05fce;
+
+  --color-ink-950: #0b0c10;
+  --color-ink-900: #121319;
+  --color-ink-850: #1a1b24;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg-app);
+  color: var(--color-txt);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  background-clip: content-box;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-rise { animation: rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Big Learning Tech UI Styles (Brilliant & IBM Quantum inspired) ── */
+.quantum-grid-bg {
+  background-color: #191b20;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.quantum-wire-glow {
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.25);
+}
+
+.tactile-chip {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.tactile-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.tactile-chip:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Quantum Prose & Math Styling ── */
+.prose-quantum h1,
+.prose-quantum h2,
+.prose-quantum h3,
+.prose-quantum h4 {
+  color: #ffffff;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.01em;
+}
+.prose-quantum h1 { font-size: 1.05rem; }
+.prose-quantum h2 { font-size: 0.95rem; }
+.prose-quantum h3 { font-size: 0.875rem; color: #93c5fd; } /* light blue tint */
+.prose-quantum h4 { font-size: 0.825rem; color: #cbd5e1; }
+
+.prose-quantum p {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+  line-height: 1.55;
+}
+
+.prose-quantum strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.prose-quantum ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.prose-quantum ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.prose-quantum li {
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+}
+
+.prose-quantum blockquote {
+  border-left: 3px solid var(--color-accent-primary);
+  padding-left: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-txt-dim);
+  font-style: italic;
+}
+
+.prose-quantum code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  background-color: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  color: #93c5fd;
+}
+
+.prose-quantum pre {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: #121316;
+  border: 1px solid var(--color-line);
+  overflow-x: auto;
+}
+
+.prose-quantum pre code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+/* KaTeX custom sizing and contrast */
+.katex {
+  font-size: 1.05em;
+}
+.katex-display {
+  margin: 0.5rem 0 !important;
+}
+
+/* ── Accessibility: Prefers Reduced Motion Support ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

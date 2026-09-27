@@ -1,0 +1,101 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: qubitlab-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: qubitlab
+      POSTGRES_USER: qubitlab
+      POSTGRES_PASSWORD: qubitlab_local_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qubitlab -d qubitlab"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - qubitlab-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: qubitlab-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - qubitlab-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qubitlab-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: QubitLab
+      ENVIRONMENT: production
+      DEBUG: "false"
+      PORT: "8000"
+      DATABASE_URL: postgresql+asyncpg://qubitlab:qubitlab_local_dev_password@db:5432/qubitlab
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET_KEY: local-production-verification-secret-key-32chars
+      CORS_ORIGINS: "http://localhost,http://localhost:80,http://localhost:3000,http://localhost:5173,http://localhost:8443"
+      LOG_LEVEL: INFO
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - qubitlab-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: "http://localhost:8000/api/v1"
+        VITE_WS_URL: "ws://localhost:8000"
+    container_name: qubitlab-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - qubitlab-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  qubitlab-network:
+    driver: bridge

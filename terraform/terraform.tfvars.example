@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────────────────────
+# QubitLab Terraform Variables Example
+# Copy to terraform.tfvars or pass via environment / CI/CD
+# NEVER COMMIT REAL PASSWORDS OR API KEYS TO GIT
+# ─────────────────────────────────────────────────────────────
+
+aws_region   = "us-east-1"
+environment  = "prod"
+project_name = "qubitlab"
+
+# Compute (Fargate)
+backend_cpu           = 1024
+backend_memory        = 2048
+backend_desired_count = 1
+container_image_tag   = "latest"
+
+# Database (PostgreSQL)
+db_instance_class          = "db.t4g.micro"
+db_allocated_storage       = 20
+db_max_allocated_storage   = 100
+db_name                    = "qubitlab"
+db_username                = "qubitlab_admin"
+enable_deletion_protection = true
+db_backup_retention_period = 7
+
+# Cache (Redis)
+enable_redis    = true
+redis_node_type = "cache.t4g.micro"
+
+# Optional Custom Domain (leave false to use ALB & CloudFront auto-generated URLs)
+enable_custom_domain = false
+domain_name          = "qubitlab.example.com"
+certificate_arn      = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# AI Tutor Configuration
+ai_provider = "openai"
+ai_api_key  = "sk-replace-with-your-real-key"
+ai_model    = "gpt-4o-mini"
+
+# GitHub OIDC Deployment
+github_repository = "tripathiji0101/Qubitlab"

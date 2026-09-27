@@ -1,0 +1,216 @@
+name: QubitLab CD (Continuous Deployment)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target deployment environment"
+        required: true
+        default: "prod"
+        type: choice
+        options:
+          - prod
+          - dev
+      image_tag:
+        description: "Custom image tag (leave blank to deploy current commit SHA, or specify a previous SHA for ROLLBACK)"
+        required: false
+        type: string
+      run_migrations:
+        description: "Run Alembic database migrations"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  id-token: write  # Required for AWS OIDC authentication
+  contents: read
+
+concurrency:
+  group: cd-${{ inputs.environment || 'prod' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to AWS (${{ inputs.environment || 'prod' }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || 'prod' }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # ─────────────────────────────────────────────────────────────
+      # 1. AWS Authentication via OpenID Connect (OIDC) - No Long-Lived Keys
+      # ─────────────────────────────────────────────────────────────
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+          audience: sts.amazonaws.com
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ─────────────────────────────────────────────────────────────
+      # 2. Immutable Image Tagging (Commit SHA or Specified Rollback SHA)
+      # ─────────────────────────────────────────────────────────────
+      - name: Determine Target Image Tag
+        id: image-tag
+        run: |
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            echo "TAG=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+            echo "Deploying specified image tag: ${{ inputs.image_tag }}"
+          else
+            echo "TAG=${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "Deploying commit SHA image tag: ${{ github.sha }}"
+          fi
+
+      # ─────────────────────────────────────────────────────────────
+      # 3. Build & Push Production Docker Images (Backend & Frontend)
+      # ─────────────────────────────────────────────────────────────
+      - name: Build & Push Backend Container Image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: qubitlab-${{ inputs.environment || 'prod' }}-backend
+          IMAGE_TAG: ${{ steps.image-tag.outputs.TAG }}
+        run: |
+          echo "Building backend production image: $REGISTRY/$REPOSITORY:$IMAGE_TAG"
+          docker build \
+            --file backend/Dockerfile \
+            --tag $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+            --tag $REGISTRY/$REPOSITORY:latest \
+            ./backend
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
+
+      - name: Build & Push Frontend Container Image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: qubitlab-${{ inputs.environment || 'prod' }}-frontend
+          IMAGE_TAG: ${{ steps.image-tag.outputs.TAG }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_WS_URL: ${{ vars.VITE_WS_URL }}
+        run: |
+          echo "Building frontend production image: $REGISTRY/$REPOSITORY:$IMAGE_TAG"
+          docker build \
+            --build-arg VITE_API_URL="$VITE_API_URL" \
+            --build-arg VITE_WS_URL="$VITE_WS_URL" \
+            --file Dockerfile \
+            --tag $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+            --tag $REGISTRY/$REPOSITORY:latest \
+            .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
+
+      # ─────────────────────────────────────────────────────────────
+      # 4. Sync Static Assets to S3 & CloudFront Cache Invalidation
+      # ─────────────────────────────────────────────────────────────
+      - name: Setup Node.js for CloudFront Bundle
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Build Frontend Distribution
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_WS_URL: ${{ vars.VITE_WS_URL }}
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy Frontend SPA to S3 Bucket
+        if: vars.FRONTEND_S3_BUCKET != ''
+        run: |
+          echo "Syncing compiled static files to S3..."
+          aws s3 sync dist/ s3://${{ vars.FRONTEND_S3_BUCKET }} --delete
+
+      - name: Invalidate CloudFront Distribution Cache
+        if: vars.CLOUDFRONT_DISTRIBUTION_ID != ''
+        run: |
+          echo "Invalidating CloudFront CDN cache..."
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+      # ─────────────────────────────────────────────────────────────
+      # 5. Database Migrations (Alembic)
+      # ─────────────────────────────────────────────────────────────
+      - name: Run Alembic Database Migrations
+        if: ${{ inputs.run_migrations != false }}
+        env:
+          CLUSTER: qubitlab-${{ inputs.environment || 'prod' }}-cluster
+          TASK_FAMILY: qubitlab-${{ inputs.environment || 'prod' }}-backend
+          SUBNET_ID: ${{ vars.MIGRATION_SUBNET_ID }}
+          SECURITY_GROUP_ID: ${{ vars.BACKEND_SG_ID }}
+        run: |
+          echo "Running database schema migrations via ECS one-off task..."
+          if [ -n "$SUBNET_ID" ] && [ -n "$SECURITY_GROUP_ID" ]; then
+            TASK_DEF_ARN=$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --query 'taskDefinition.taskDefinitionArn' --output text)
+            aws ecs run-task \
+              --cluster "$CLUSTER" \
+              --task-definition "$TASK_DEF_ARN" \
+              --launch-type FARGATE \
+              --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=DISABLED}" \
+              --overrides '{"containerOverrides": [{"name": "backend", "command": ["alembic", "upgrade", "head"]}]}'
+            echo "Migration task triggered successfully."
+          else
+            echo "Skipping ECS migration task (Subnet or SG vars not provided). Migrations handled by deployment pipeline."
+          fi
+
+      # ─────────────────────────────────────────────────────────────
+      # 6. Deploy Service Update to ECS Fargate
+      # ─────────────────────────────────────────────────────────────
+      - name: Update ECS Fargate Service
+        env:
+          CLUSTER: qubitlab-${{ inputs.environment || 'prod' }}-cluster
+          SERVICE: qubitlab-${{ inputs.environment || 'prod' }}-backend-service
+        run: |
+          echo "Deploying new container image to ECS service: $SERVICE"
+          aws ecs update-service \
+            --cluster "$CLUSTER" \
+            --service "$SERVICE" \
+            --force-new-deployment
+
+      # ─────────────────────────────────────────────────────────────
+      # 7. Deployment Stabilization
+      # ─────────────────────────────────────────────────────────────
+      - name: Wait for ECS Service Stabilization
+        env:
+          CLUSTER: qubitlab-${{ inputs.environment || 'prod' }}-cluster
+          SERVICE: qubitlab-${{ inputs.environment || 'prod' }}-backend-service
+        run: |
+          echo "Waiting for ECS service deployment to stabilize..."
+          aws ecs wait services-stable \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE"
+          echo "ECS service has stabilized."
+
+      # ─────────────────────────────────────────────────────────────
+      # 8. Post-Deployment Verification & Health Check
+      # ─────────────────────────────────────────────────────────────
+      - name: Verify Health Endpoint
+        env:
+          HEALTH_URL: ${{ vars.BACKEND_HEALTHCHECK_URL }}
+        run: |
+          if [ -z "$HEALTH_URL" ]; then
+            echo "BACKEND_HEALTHCHECK_URL not set in variables; skipping live HTTP probe."
+            exit 0
+          fi
+          echo "Polling health check endpoint: $HEALTH_URL"
+          MAX_ATTEMPTS=12
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" || true)
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Health check PASSED with HTTP 200 on attempt $i."
+              exit 0
+            fi
+            echo "Attempt $i: Received HTTP $HTTP_STATUS, retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::Health check FAILED to return HTTP 200 after $MAX_ATTEMPTS attempts."
+          exit 1

@@ -1,0 +1,10 @@
+{
+  "description": "Delivers a fully developed frontend with complete pages, offering users a seamless and intuitive interface for efficient interaction and navigation.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "levels": [
+    {
+      "n": 1,
+      "role": "Security Analyst",
+      "title": "Quantum Key Distribution",
+      "algorithm": "BB84 Protocol",
+      "difficulty": "Beginner",
+      "duration": "45 min",
+      "xp": 500,
+      "slug": "qkd"
+    },
+    {
+      "n": 2,
+      "role": "Logic Designer",
+      "title": "Deutsch\u2013Jozsa Algorithm",
+      "algorithm": "Deutsch\u2013Jozsa",
+      "difficulty": "Beginner",
+      "duration": "50 min",
+      "xp": 750,
+      "slug": "deutsch-jozsa"
+    },
+    {
+      "n": 3,
+      "role": "Data Architect",
+      "title": "Grover's Search",
+      "algorithm": "Grover's Algorithm",
+      "difficulty": "Intermediate",
+      "duration": "60 min",
+      "xp": 1000,
+      "slug": "grover"
+    },
+    {
+      "n": 4,
+      "role": "Logistics Engineer",
+      "title": "Optimization with QAOA",
+      "algorithm": "QAOA",
+      "difficulty": "Advanced",
+      "duration": "75 min",
+      "xp": 1500,
+      "slug": "qaoa"
+    },
+    {
+      "n": 5,
+      "role": "Quantum AI Engineer",
+      "title": "Quantum Neural Network",
+      "algorithm": "QNN / VQC",
+      "difficulty": "Advanced",
+      "duration": "90 min",
+      "xp": 2000,
+      "slug": "qnn"
+    },
+    {
+      "n": 6,
+      "role": "Communications Specialist",
+      "title": "Quantum Teleportation",
+      "algorithm": "Quantum Teleportation Protocol",
+      "difficulty": "Intermediate",
+      "duration": "55 min",
+      "xp": 850,
+      "slug": "teleportation"
+    },
+    {
+      "n": 7,
+      "role": "Quantum Algorithm Engineer",
+      "title": "Quantum Fourier Transform",
+      "algorithm": "Quantum Fourier Transform (QFT)",
+      "difficulty": "Advanced",
+      "duration": "60 min",
+      "xp": 1000,
+      "slug": "qft"
+    },
+    {
+      "n": 8,
+      "role": "Quantum Algorithm Engineer",
+      "title": "Hidden Pattern Detection",
+      "algorithm": "Simon's Algorithm",
+      "difficulty": "Advanced",
+      "duration": "65 min",
+      "xp": 1100,
+      "slug": "simon"
+    },
+    {
+      "n": 9,
+      "role": "Quantum Optimization Scientist",
+      "title": "Molecular Energy Explorer",
+      "algorithm": "Variational Quantum Eigensolver",
+      "difficulty": "Advanced",
+      "duration": "70 min",
+      "xp": 1250,
+      "slug": "vqe"
+    },
+    {
+      "n": 10,
+      "role": "Quantum Cryptography Specialist",
+      "title": "Factorization Challenge",
+      "algorithm": "Shor's Algorithm",
+      "difficulty": "Expert",
+      "duration": "80 min",
+      "xp": 1500,
+      "slug": "shor"
+    },
+    {
+      "n": 11,
+      "role": "Quantum Reliability Engineer",
+      "title": "Protect the Qubit",
+      "algorithm": "Quantum Error Correction",
+      "difficulty": "Expert",
+      "duration": "75 min",
+      "xp": 1400,
+      "slug": "error-correction"
+    },
+    {
+      "n": 12,
+      "role": "Quantum Computing Researcher",
+      "title": "Quantum Linear Systems",
+      "algorithm": "HHL Algorithm",
+      "difficulty": "Expert",
+      "duration": "85 min",
+      "xp": 1700,
+      "slug": "hhl"
+    }
+  ],
+  "total_levels": 12,
+  "projects": [
+    {
+      "id": "2b8b04a3-96bf-4465-b44c-6792f007adb4",
+      "slug": "teleportation",
+      "level_id": "0da31204-530f-406e-99e2-bed6679a66f5"
+    },
+    {
+      "id": "3b04cd1a-3370-4df5-a0f5-45480b7c1a1c",
+      "slug": "hhl",
+      "level_id": "cc9ab280-6cfe-499a-84c3-05848b7dcb94"
+    },
+    {
+      "id": "3dd0ca00-69e6-4fc9-9a00-3964231c432b",
+      "slug": "qft",
+      "level_id": "a8e58bfb-ccd2-4d64-aab8-665c9c8eea4f"
+    },
+    {
+      "id": "5354f2ce-8f6e-42d9-ab0a-0434ae6a0c03",
+      "slug": "error-correction",
+      "level_id": "87bf49e5-8ad8-41bd-8d24-d369a4d0ea67"
+    },
+    {
+      "id": "8dbfcefb-ecc7-4ce9-bb2b-486a9fe449ec",
+      "slug": "vqe",
+      "level_id": "b3727690-36a1-467d-8305-8fd6c7663816"
+    },
+    {
+      "id": "9f435eef-320a-41de-a563-283b7e1ed0f2",
+      "slug": "simon",
+      "level_id": "c41f1e4f-52eb-495c-844e-e7d826020601"
+    },
+    {
+      "id": "a8e01f65-06d2-4411-a377-769ca6896b22",
+      "slug": "shor",
+      "level_id": "6c847ed9-8c7b-4402-bedf-89c2cce1b0d4"
+    }
+  ],
+  "total_projects": 7,
+  "total_lessons": 70,
+  "dup_level_slugs": [],
+  "dup_level_n": [],
+  "dup_projects": [],
+  "dup_lessons": [],
+  "orphan_lessons": 0,
+  "project_lesson_counts": {
+    "error-correction": 10,
+    "hhl": 10,
+    "qft": 10,
+    "shor": 10,
+    "simon": 10,
+    "teleportation": 10,
+    "vqe": 10
+  }
+}

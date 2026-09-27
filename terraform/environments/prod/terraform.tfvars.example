@@ -1,0 +1,13 @@
+aws_region          = "us-east-1"
+github_repository   = "tripathiji0101/Qubitlab"
+container_image_tag = "replace-with-git-commit-sha"
+
+# Custom Domain (optional)
+enable_custom_domain = false
+domain_name          = "qubitlab.example.com"
+certificate_arn      = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# AI Tutor Provider
+ai_provider = "openai"
+ai_api_key  = "sk-replace-with-your-real-key"
+ai_model    = "gpt-4o-mini"

@@ -57,3 +57,8 @@ output "health_check_url" {
 output "cloudfront_domain_name" {
   value = module.qubitlab.cloudfront_domain_name
 }
+
+output "github_actions_role_arn" {
+  description = "IAM Role ARN for GitHub Actions OIDC deployment"
+  value       = module.qubitlab.github_actions_role_arn
+}

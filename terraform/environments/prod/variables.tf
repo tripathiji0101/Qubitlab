@@ -31,7 +31,7 @@ variable "certificate_arn" {
 
 variable "ai_provider" {
   type    = string
-  default = "openai"
+  default = "gemini"
 }
 
 variable "ai_api_key" {
@@ -42,5 +42,5 @@ variable "ai_api_key" {
 
 variable "ai_model" {
   type    = string
-  default = "gpt-4o-mini"
+  default = "gemini-2.0-flash"
 }

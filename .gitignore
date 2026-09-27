@@ -59,6 +59,7 @@ override.tf.json
 .terraformrc
 terraform.rc
 terraform.tfplan
+.terraform.lock.hcl
 
 # Docker
 .docker/

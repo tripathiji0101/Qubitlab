@@ -41,7 +41,7 @@ resource "aws_db_instance" "postgres" {
   vpc_security_group_ids     = [aws_security_group.rds.id]
   parameter_group_name       = aws_db_parameter_group.postgres16.name
   publicly_accessible        = false
-  multi_az                   = var.environment == "prod" ? true : false
+  multi_az                   = var.db_multi_az
   deletion_protection        = var.enable_deletion_protection
   backup_retention_period    = var.db_backup_retention_period
   backup_window              = "03:00-04:00"

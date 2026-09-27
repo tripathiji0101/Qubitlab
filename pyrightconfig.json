@@ -1,0 +1,11 @@
+{
+  "include": [
+    "backend"
+  ],
+  "extraPaths": [
+    "backend"
+  ],
+  "venvPath": "/opt/anaconda3/envs",
+  "venv": "qubitlab",
+  "pythonPath": "/opt/anaconda3/envs/qubitlab/bin/python"
+}

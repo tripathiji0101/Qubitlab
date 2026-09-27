@@ -1,13 +1,23 @@
-aws_region          = "us-east-1"
-github_repository   = "tripathiji0101/Qubitlab"
-container_image_tag = "replace-with-git-commit-sha"
+# ─────────────────────────────────────────────────────────────
+# QubitLab Production — Terraform Variables Example
+# ─────────────────────────────────────────────────────────────
+# Copy this file to terraform.tfvars and fill in real values.
+# NEVER commit terraform.tfvars to Git.
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with real values
+#   terraform plan
+# ─────────────────────────────────────────────────────────────
 
-# Custom Domain (optional)
-enable_custom_domain = false
-domain_name          = "qubitlab.example.com"
-certificate_arn      = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+# AI Provider — Gemini API key is passed via TF_VAR_ai_api_key
+# environment variable or entered at plan/apply prompt.
+# DO NOT paste a real key in this file.
+ai_provider = "gemini"
+ai_api_key  = ""
+ai_model    = "gemini-2.0-flash"
 
-# AI Tutor Provider
-ai_provider = "openai"
-ai_api_key  = "sk-replace-with-your-real-key"
-ai_model    = "gpt-4o-mini"
+# Custom Domain (optional, leave disabled for first deployment)
+# enable_custom_domain = true
+# domain_name          = "qubitlab.dev"
+# certificate_arn      = "arn:aws:acm:us-east-1:<ACCOUNT_ID>:certificate/<CERT_ID>"

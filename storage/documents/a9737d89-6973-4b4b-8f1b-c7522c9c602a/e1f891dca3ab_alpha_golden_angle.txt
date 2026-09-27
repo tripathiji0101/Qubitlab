@@ -1,0 +1,4 @@
+Alpha Institute Quantum Syllabus 2026.
+Section 4.2: The Secret Golden Angle Theta is exactly 0.785398 radians.
+All students must initialize the ancillary qubit q1 with a Ry(0.785398) rotation.
+Experiment Alpha-99 requires measuring exclusively in the Z-basis.

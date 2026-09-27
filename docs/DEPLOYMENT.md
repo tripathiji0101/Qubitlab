@@ -177,12 +177,17 @@ terraform apply tfplan
 ### 1. GitHub OpenID Connect (OIDC) Authentication
 QubitLab uses **GitHub OIDC** to authenticate GitHub Actions directly with AWS IAM without storing long-lived, permanent access keys in the repository.
 
-1. Ensure AWS has the GitHub OIDC Identity Provider created:
-   - Provider URL: `https://token.actions.githubusercontent.com`
-   - Audience: `sts.amazonaws.com`
-2. The Terraform module creates the role `qubitlab-prod-github-actions-cd-role` with trust policy scoped strictly to:
+1. The GitHub OIDC Identity Provider (`https://token.actions.githubusercontent.com` with audience `sts.amazonaws.com`) is explicitly managed by Terraform (`aws_iam_openid_connect_provider.github`).
+   - If this provider already exists in your AWS account, either set `create_oidc_provider = false` in your Terraform variables, or import it into state:
+     ```bash
+     terraform import aws_iam_openid_connect_provider.github[0] arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com
+     ```
+2. The Terraform module creates the role `qubitlab-prod-github-actions-cd-role` (`aws_iam_role.github_actions_cd`) with trust policy strictly scoped to the `main` branch and targeted environment:
    ```json
-   "token.actions.githubusercontent.com:sub": "repo:tripathiji0101/Qubitlab:*"
+   "token.actions.githubusercontent.com:sub": [
+     "repo:tripathiji0101/Qubitlab:ref:refs/heads/main",
+     "repo:tripathiji0101/Qubitlab:environment:prod"
+   ]
    ```
 
 ### 2. Configure GitHub Secrets & Variables
@@ -191,7 +196,7 @@ In your GitHub Repository, navigate to **Settings** → **Secrets and variables*
 #### Repository Secrets
 | Secret Name | Value |
 |---|---|
-| `AWS_ROLE_ARN` | Output `github_actions_role_arn` from Terraform (e.g. `arn:aws:iam::123456789012:role/qubitlab-prod-github-actions-cd-role`) |
+| `AWS_ROLE_ARN` | Value of Terraform output `github_actions_role_arn` (e.g. `arn:aws:iam::<ACCOUNT_ID>:role/qubitlab-prod-github-actions-cd-role`). *Do not hardcode or commit this value to source control.* |
 
 #### Repository Variables
 | Variable Name | Value |

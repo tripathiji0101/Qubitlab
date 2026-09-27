@@ -40,7 +40,8 @@ module "qubitlab" {
   db_allocated_storage       = 20
   db_max_allocated_storage   = 100
   enable_deletion_protection = true
-  db_backup_retention_period = 7
+  db_backup_retention_period = 1
+  db_multi_az                = false
   enable_redis               = true
   redis_node_type            = "cache.t4g.micro"
   enable_custom_domain       = var.enable_custom_domain
@@ -74,4 +75,9 @@ output "ecr_frontend_repository_url" {
 
 output "rds_endpoint" {
   value = module.qubitlab.rds_endpoint
+}
+
+output "github_actions_role_arn" {
+  description = "IAM Role ARN for GitHub Actions OIDC deployment"
+  value       = module.qubitlab.github_actions_role_arn
 }

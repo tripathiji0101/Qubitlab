@@ -98,9 +98,15 @@ variable "enable_deletion_protection" {
 }
 
 variable "db_backup_retention_period" {
-  description = "Automated backup retention period in days"
+  description = "Automated backup retention period in days (0-35, 1 for Free Tier)"
   type        = number
-  default     = 7
+  default     = 1
+}
+
+variable "db_multi_az" {
+  description = "Enable Multi-AZ RDS deployment (must be false for Free Tier)"
+  type        = bool
+  default     = false
 }
 
 # ── Redis (ElastiCache) ──

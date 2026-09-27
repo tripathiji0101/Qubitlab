@@ -60,9 +60,7 @@ from app.api.v1.university import (
 from app.services.ai.tutor import tutor
 
 
-TEST_DB_URL = "sqlite+aiosqlite:///./qubitlab.db"
-engine = create_async_engine(TEST_DB_URL, echo=False)
-async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+from app.core.database import engine, async_session_factory as async_session
 
 
 def _uid():

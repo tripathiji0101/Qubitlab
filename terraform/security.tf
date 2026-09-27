@@ -231,7 +231,8 @@ resource "aws_iam_openid_connect_provider" "github" {
   ]
 
   thumbprint_list = [
-    "6938fd4d98bab03faadb97b34396831e3780aea1"
+    "6938fd4d98bab03faadb97b34396831e3780aea1",
+    "1c58761ec52c748b4e048560d436704bcdb679b7"
   ]
 
   tags = local.common_tags
@@ -252,9 +253,12 @@ resource "aws_iam_role" "github_actions_cd" {
         Condition = {
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+          StringLike = {
             "token.actions.githubusercontent.com:sub" = [
-              "repo:${var.github_repository}:ref:refs/heads/main",
-              "repo:${var.github_repository}:environment:${var.environment}"
+              "repo:${var.github_repository}:*",
+              "repo:${lower(var.github_repository)}:*",
+              "repo:tripathiji0101*Qubitlab*:*"
             ]
           }
         }

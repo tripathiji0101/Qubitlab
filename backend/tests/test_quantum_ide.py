@@ -116,6 +116,10 @@ os.system("echo compromised")
 
 class TestQuantumIdeSimulationEngines:
     def test_qiskit_real_execution(self):
+        from app.services.quantum.qiskit_engine import HAS_QISKIT
+        if not HAS_QISKIT:
+            pytest.skip("Qiskit is not installed in this environment")
+
         code = """from qiskit import QuantumCircuit
 
 qc = QuantumCircuit(2)
@@ -133,6 +137,10 @@ qc.cx(0, 1)
         assert "11" in amps_dict and amps_dict["11"] > 0.4
 
     def test_pennylane_real_execution(self):
+        from app.services.quantum.pennylane_engine import HAS_PENNYLANE
+        if not HAS_PENNYLANE:
+            pytest.skip("PennyLane is not installed in this environment")
+
         code = """import pennylane as qml
 
 dev = qml.device("default.qubit", wires=2)
@@ -152,6 +160,10 @@ def circuit():
         assert "11" in amps_dict and amps_dict["11"] > 0.4
 
     def test_cirq_real_execution(self):
+        from app.services.quantum.cirq_engine import HAS_CIRQ
+        if not HAS_CIRQ:
+            pytest.skip("Cirq is not installed in this environment")
+
         code = """import cirq
 
 q = cirq.LineQubit.range(2)

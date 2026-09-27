@@ -79,6 +79,10 @@ Remote state locking prevents race conditions and concurrent applies:
    }
    ```
 
+> [!NOTE]
+> The S3 backend block is provided as a pre-configured template in `versions.tf` (commented out by default to support offline and local dry-run validation). To enable remote state, bootstrap the S3 bucket and DynamoDB table as shown below and uncomment the backend block.
+
+
 ---
 
 ## 4. Environment Comparison

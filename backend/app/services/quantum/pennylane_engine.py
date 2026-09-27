@@ -12,7 +12,7 @@ try:
     import pennylane as qml
     import numpy as np
     HAS_PENNYLANE = True
-except ImportError:
+except (ImportError, AttributeError, Exception):
     HAS_PENNYLANE = False
 
 

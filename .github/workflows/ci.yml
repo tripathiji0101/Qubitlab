@@ -149,10 +149,9 @@ jobs:
       - name: Check for Committed Secrets & Keys
         run: |
           echo "Scanning for sensitive keys and credentials..."
-          # Fail if private keys or unmasked AWS keys are present
-          if grep -rn --exclude-dir={.git,node_modules,.venv,dist,build} \
-            --exclude="*.md" --exclude="*.example" --exclude="*.tfvars.example" \
-            -E "BEGIN RSA PRIVATE KEY|BEGIN PRIVATE KEY|AKIA[0-9A-Z]{16}" .; then
+          # Scan tracked code files for unmasked private keys or AWS access keys
+          # Exclude .github workflows, docs, and example files to prevent self-matching
+          if git grep -nE "BEGIN RSA PRIVATE KEY|BEGIN PRIVATE KEY|AKIA[0-9A-Z]{16}" -- ':!.github' ':!*.md' ':!*.example' ':!*.tfvars.example'; then
             echo "::error::Potential sensitive secret or private key found in tracked files!"
             exit 1
           fi

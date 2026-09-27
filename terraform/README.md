@@ -126,7 +126,7 @@ terraform apply tfplan
 
 ## Security Best Practices Followed
 
-1. **No Plaintext Secrets**: Passwords and JWT tokens are generated with `random_password` and stored directly into AWS Secrets Manager.
+1. **Sensitive State & No Hardcoded Secrets**: Secrets are not hardcoded in source/configuration; passwords and tokens are dynamically generated and stored in AWS Secrets Manager, and Terraform state must be treated as sensitive.
 2. **Private Networking**: Database and Redis instances are deployed in private subnets with no public IP allocation.
 3. **Least Privilege**: Application container and CI/CD roles have strict, minimal permission scopes.
 4. **State Protection**: State files are excluded from Git via `.gitignore`.

@@ -328,7 +328,7 @@ terraform fmt -check -recursive terraform/
 
 ## ☁️ Infrastructure as Code (Terraform)
 
-The `terraform/` directory manages the complete AWS architecture with zero plaintext secrets:
+The `terraform/` directory manages the complete AWS architecture with no hardcoded secrets in source configuration (Terraform state must be treated as sensitive):
 - **Remote State**: S3 bucket with AES-256 encryption and DynamoDB distributed locking.
 - **Environments**: Isolated `dev` (single AZ, cost-optimized) and `prod` (Multi-AZ, deletion protection).
 - **Least Privilege IAM**: Separate execution, task, and GitHub Actions OIDC deployment roles.

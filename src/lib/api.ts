@@ -5,7 +5,17 @@
  * automatic token refresh, and typed request/response helpers.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
+function getApiBase(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (typeof window !== "undefined" && window.location.protocol === "https:") {
+    if (!envUrl || envUrl.includes("localhost") || envUrl.startsWith("http://")) {
+      return "/api/v1";
+    }
+  }
+  return envUrl || "http://localhost:8000/api/v1";
+}
+
+const API_BASE = getApiBase();
 
 // ── Token storage ──
 

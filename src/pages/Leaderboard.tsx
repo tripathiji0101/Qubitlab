@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, Badge, Tabs, cx } from "../components/ui";
 import { leaderboard } from "../lib/data";
+import { useAuth } from "../lib/auth";
 
 const leagues = [
   { name: "Bronze", tone: "warn" as const }, { name: "Silver", tone: "neutral" as const },
@@ -8,6 +9,7 @@ const leagues = [
 ];
 
 export default function Leaderboard() {
+  const { user } = useAuth();
   const [scope, setScope] = useState("global");
   const [league, setLeague] = useState("Silver");
   const you = leaderboard.find((l) => l.you)!;
@@ -62,9 +64,13 @@ export default function Leaderboard() {
             </span>
             <span className="flex items-center gap-2.5">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(120deg,#4d7cfe,#9b6bff)] text-[12px] font-600 text-white">
-                {l.name.split(" ").map((x) => x[0]).slice(0, 2).join("")}
+                {l.you
+                  ? (user?.avatar_initials || (user?.name ? user.name.split(" ").map((x) => x[0]).slice(0, 2).join("") : "ME"))
+                  : l.name.split(" ").map((x) => x[0]).slice(0, 2).join("")}
               </span>
-              <span className={cx("font-500", l.you && "text-quantum-cyan")}>{l.name}</span>
+              <span className={cx("font-500", l.you && "text-quantum-cyan")}>
+                {l.you ? (user?.name ? `${user.name} (You)` : "You") : l.name}
+              </span>
             </span>
             <span><Badge tone="violet">Lvl {l.level}</Badge></span>
             <span className="font-mono">{l.xp.toLocaleString()}</span>

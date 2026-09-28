@@ -21,7 +21,9 @@ async def call_llm(
     if not settings.AI_API_KEY:
         raise LLMError("No AI API key configured")
 
-    model = model or settings.AI_MODEL or "gemini-3.6-flash"
+    model = model or settings.AI_MODEL or "gemini-3.8-flash"
+    if model in ("gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-3.6-flash"):
+        model = "gemini-3.8-flash"
     base_url = (settings.AI_BASE_URL or "").strip().rstrip("/")
     is_gemini = (settings.AI_PROVIDER == "gemini" or "generativelanguage.googleapis.com" in base_url)
 
@@ -50,6 +52,10 @@ async def call_llm(
                         logger.warning("Gemini rate limited (attempt %d/3)", attempt + 1)
                         import asyncio
                         await asyncio.sleep(2 ** attempt)
+                        continue
+                    if resp.status_code == 404 and model != "gemini-3.8-flash":
+                        logger.warning("Gemini model %s returned 404, falling back to gemini-3.8-flash", model)
+                        model = "gemini-3.8-flash"
                         continue
                     resp.raise_for_status()
                     data = resp.json()

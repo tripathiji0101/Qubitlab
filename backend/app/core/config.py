@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     AI_PROVIDER: Optional[str] = None  # "openai", "gemini", etc.
     AI_API_KEY: Optional[str] = None
     AI_BASE_URL: Optional[str] = None
-    AI_MODEL: str = "gpt-4o-mini"
+    AI_MODEL: str = "gemini-3.8-flash"
 
     # ── Vector DB ──
     VECTOR_DB_URL: Optional[str] = None

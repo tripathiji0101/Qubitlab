@@ -42,5 +42,5 @@ variable "ai_api_key" {
 
 variable "ai_model" {
   type    = string
-  default = "gemini-2.0-flash"
+  default = "gemini-3.8-flash"
 }

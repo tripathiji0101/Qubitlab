@@ -494,7 +494,7 @@ def analyze_circuit(
     elif met_count > 0:
         student_state = "PROGRESSING"
     elif total_criteria == 0 and entanglement_detected:
-        student_state = "COMPLETED"
+        student_state = "PROGRESSING"
     elif total_criteria == 0 and superposition_qubits:
         student_state = "PROGRESSING"
     else:
@@ -510,7 +510,7 @@ def analyze_circuit(
 
     celebration = None
     suggested_experiment = None
-    if student_state == "COMPLETED":
+    if student_state == "COMPLETED" and total_criteria > 0 and met_count == total_criteria:
         celebration = {
             "title": mission or "Mission Clear",
             "message": "All success criteria have been met! You have demonstrated proper quantum state engineering.",

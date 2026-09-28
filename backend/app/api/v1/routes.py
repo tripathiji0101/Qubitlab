@@ -554,7 +554,7 @@ async def get_profile(
     default_skills = ["Quantum Gates", "Superposition", "Entanglement", "Measurement", "Optimization", "Quantum ML"]
     mastery_map = {m.concept_name: m.mastery for m in masteries}
     skill_radar = [
-        SkillRadarItem(skill=s, value=mastery_map.get(s, random.randint(20, 60)))
+        SkillRadarItem(skill=s, value=mastery_map.get(s, 0.0))
         for s in default_skills
     ]
 

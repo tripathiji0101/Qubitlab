@@ -1,7 +1,8 @@
 import { Link } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, Badge, Button, Tabs, cx } from "../components/ui";
-import { historyItems } from "../lib/data";
+import { historyItems as defaultHistory } from "../lib/data";
+import { history as historyApi, type HistoryItem, getAccessToken } from "../lib/api";
 
 const statusTone: Record<string, "ok" | "warn" | "danger" | "cyan"> = {
   Passed: "ok", "In progress": "cyan", Failed: "danger",
@@ -9,7 +10,20 @@ const statusTone: Record<string, "ok" | "warn" | "danger" | "cyan"> = {
 
 export default function History() {
   const [tab, setTab] = useState("all");
-  const list = historyItems.filter((h) =>
+  const [items, setItems] = useState<HistoryItem[]>(defaultHistory);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) return;
+    historyApi
+      .list()
+      .then((res) => {
+        if (res) setItems(res);
+      })
+      .catch(() => {});
+  }, []);
+
+  const list = items.filter((h) =>
     tab === "all" ? true : tab === "completed" ? h.status === "Passed" : tab === "attempts" ? h.status !== "In progress" : true
   );
 

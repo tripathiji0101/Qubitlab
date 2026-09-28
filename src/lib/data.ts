@@ -23,13 +23,13 @@ export type Level = {
 export const levels: Level[] = [
   {
     n: 1, role: "Security Analyst", title: "Quantum Key Distribution", algorithm: "BB84 Protocol",
-    difficulty: "Beginner", duration: "45 min", xp: 500, status: "completed", progress: 100, slug: "bb84",
+    difficulty: "Beginner", duration: "45 min", xp: 500, status: "active", progress: 0, slug: "bb84",
     mission: "Secure Alice and Bob's communication channel and detect any eavesdropper listening in.",
     concepts: ["Superposition", "Measurement bases", "No-cloning"], gates: ["H", "X", "Z", "Measure"],
   },
   {
     n: 2, role: "Logic Designer", title: "Instant Database Verification", algorithm: "Deutsch–Jozsa",
-    difficulty: "Beginner", duration: "50 min", xp: 650, status: "active", progress: 62, slug: "deutsch-jozsa",
+    difficulty: "Beginner", duration: "50 min", xp: 650, status: "locked", progress: 0, slug: "deutsch-jozsa",
     mission: "Determine in a single query whether a black-box function is constant or balanced.",
     concepts: ["Phase kickback", "Interference", "Oracles"], gates: ["H", "X", "CNOT", "Measure"],
   },
@@ -104,15 +104,15 @@ export const levels: Level[] = [
 ];
 
 export const challenges = [
-  { id: "bell", title: "Build a Bell State", algorithm: "Entanglement", difficulty: "Beginner", xp: 100, best: 96, attempts: 3, done: true, tone: "cyan" as const,
+  { id: "bell", title: "Build a Bell State", algorithm: "Entanglement", difficulty: "Beginner", xp: 100, best: 0, attempts: 0, done: false, tone: "cyan" as const,
     statement: "Create a maximally entangled two-qubit Bell state |Φ⁺⟩ = (|00⟩ + |11⟩)/√2." },
-  { id: "grover-oracle", title: "Implement Grover's Oracle", algorithm: "Grover", difficulty: "Intermediate", xp: 300, best: 84, attempts: 5, done: true, tone: "blue" as const,
+  { id: "grover-oracle", title: "Implement Grover's Oracle", algorithm: "Grover", difficulty: "Intermediate", xp: 300, best: 0, attempts: 0, done: false, tone: "blue" as const,
     statement: "Mark the target state |11⟩ using a phase oracle, then apply the diffusion operator." },
   { id: "ghz", title: "Prepare a GHZ State", algorithm: "Entanglement", difficulty: "Intermediate", xp: 250, best: 0, attempts: 0, done: false, tone: "violet" as const,
     statement: "Extend entanglement across three qubits to build a GHZ state." },
-  { id: "qaoa-opt", title: "Optimize a QAOA Circuit", algorithm: "QAOA", difficulty: "Advanced", xp: 500, best: 0, attempts: 2, done: false, tone: "magenta" as const,
+  { id: "qaoa-opt", title: "Optimize a QAOA Circuit", algorithm: "QAOA", difficulty: "Advanced", xp: 500, best: 0, attempts: 0, done: false, tone: "magenta" as const,
     statement: "Reduce the depth of a MaxCut QAOA circuit while preserving the approximation ratio." },
-  { id: "teleport", title: "Quantum Teleportation", algorithm: "Protocols", difficulty: "Intermediate", xp: 350, best: 71, attempts: 4, done: false, tone: "blue" as const,
+  { id: "teleport", title: "Quantum Teleportation", algorithm: "Protocols", difficulty: "Intermediate", xp: 350, best: 0, attempts: 0, done: false, tone: "blue" as const,
     statement: "Teleport an arbitrary single-qubit state using entanglement and classical communication." },
   { id: "qft", title: "Three-Qubit QFT", algorithm: "Transforms", difficulty: "Advanced", xp: 450, best: 0, attempts: 0, done: false, tone: "cyan" as const,
     statement: "Construct the Quantum Fourier Transform over three qubits with controlled-phase gates." },
@@ -130,29 +130,31 @@ export const leaderboard = [
 ];
 
 export const badges = [
-  { name: "First Qubit", tone: "cyan" as const, earned: true, desc: "Placed your first gate" },
-  { name: "Superposition Master", tone: "blue" as const, earned: true, desc: "Built 10 superposition circuits" },
-  { name: "Entanglement Explorer", tone: "violet" as const, earned: true, desc: "Created a Bell state" },
+  { name: "First Qubit", tone: "cyan" as const, earned: false, desc: "Placed your first gate" },
+  { name: "Superposition Master", tone: "blue" as const, earned: false, desc: "Built 10 superposition circuits" },
+  { name: "Entanglement Explorer", tone: "violet" as const, earned: false, desc: "Created a Bell state" },
   { name: "Grover Solver", tone: "magenta" as const, earned: false, desc: "Solve the Grover challenge" },
   { name: "QAOA Optimizer", tone: "blue" as const, earned: false, desc: "Optimize a variational circuit" },
   { name: "Quantum AI Engineer", tone: "cyan" as const, earned: false, desc: "Complete Level 5" },
 ];
 
-export const historyItems = [
-  { project: "Instant Database Verification", algorithm: "Deutsch–Jozsa", sdk: "Qiskit", score: 88, date: "Sep 6, 2026", depth: 6, status: "In progress" },
-  { project: "Build a Bell State", algorithm: "Entanglement", sdk: "Qiskit", score: 96, date: "Sep 4, 2026", depth: 3, status: "Passed" },
-  { project: "Grover's Oracle", algorithm: "Grover", sdk: "PennyLane", score: 84, date: "Sep 2, 2026", depth: 8, status: "Passed" },
-  { project: "Quantum Key Distribution", algorithm: "BB84", sdk: "Qiskit", score: 92, date: "Aug 30, 2026", depth: 5, status: "Passed" },
-  { project: "Quantum Teleportation", algorithm: "Protocols", sdk: "Cirq", score: 71, date: "Aug 28, 2026", depth: 7, status: "Failed" },
-];
+export const historyItems: Array<{
+  project: string;
+  algorithm: string;
+  sdk: string;
+  score: number;
+  date: string;
+  depth: number;
+  status: string;
+}> = [];
 
 export const skillRadar = [
-  { skill: "Superposition", value: 88 },
-  { skill: "Entanglement", value: 74 },
-  { skill: "Quantum Gates", value: 92 },
-  { skill: "Algorithms", value: 61 },
-  { skill: "Optimization", value: 43 },
-  { skill: "Quantum ML", value: 30 },
+  { skill: "Superposition", value: 0 },
+  { skill: "Entanglement", value: 0 },
+  { skill: "Quantum Gates", value: 0 },
+  { skill: "Algorithms", value: 0 },
+  { skill: "Optimization", value: 0 },
+  { skill: "Quantum ML", value: 0 },
 ];
 
 export const progressSeries = [

@@ -4,6 +4,7 @@ import { Button, Card, Badge, Progress, Stat, cx } from "../components/ui";
 import { Count, Sparkbars } from "../components/motion";
 import { levels as staticLevels } from "../lib/data";
 import { dashboard as dashboardApi, type DashboardResponse, type LevelResponse, getAccessToken } from "../lib/api";
+import { useAuth } from "../lib/auth";
 
 const days = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -11,6 +12,7 @@ const days = ["M", "T", "W", "T", "F", "S", "S"];
 const xpThresholds = [0, 2000, 5000, 10000, 20000, 50000];
 
 export default function Dashboard() {
+  const { user: authUser } = useAuth();
   const [recOpen, setRecOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardResponse | null>(null);
@@ -32,14 +34,14 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Derive display values — from API data if available, otherwise from static defaults
-  const userName = (data?.user as Record<string, unknown>)?.name as string ?? "Alex";
-  const userXp = data?.xp ?? 2450;
-  const currentLevel = data?.current_level ?? 2;
-  const xpCeiling = xpThresholds[Math.min(currentLevel, xpThresholds.length - 1)] || 3000;
-  const xpToNext = data?.xp_to_next_level ?? 550;
-  const streak = data?.streak ?? 7;
-  const weeklyXp = data?.weekly_xp ?? [320, 180, 540, 410, 260, 620, 480];
+  // Derive display values — from API data if available, otherwise from authUser or clean defaults
+  const userName = (data?.user as Record<string, unknown>)?.name as string ?? authUser?.name ?? "Quantum Learner";
+  const userXp = data?.xp ?? authUser?.xp ?? 0;
+  const currentLevel = data?.current_level ?? authUser?.current_level ?? 1;
+  const xpCeiling = xpThresholds[Math.min(currentLevel, xpThresholds.length - 1)] || 2000;
+  const xpToNext = data?.xp_to_next_level ?? Math.max(0, xpCeiling - userXp);
+  const streak = data?.streak ?? authUser?.streak ?? 0;
+  const weeklyXp = data?.weekly_xp ?? [0, 0, 0, 0, 0, 0, 0];
   const totalWeeklyXp = weeklyXp.reduce((a, b) => a + b, 0);
   const xpPercent = xpCeiling > 0 ? Math.min(100, Math.round((userXp / xpCeiling) * 100)) : 0;
 
@@ -51,22 +53,22 @@ export default function Dashboard() {
 
   const activeProject = data?.active_project as Record<string, unknown> | null;
   const activeSlug = (activeProject?.slug as string) ??
-    displayLevels.find((l) => l.status === "active")?.slug ?? "deutsch-jozsa";
+    displayLevels.find((l) => l.status === "active")?.slug ?? "bb84";
   const activeTitle = (activeProject?.title as string) ??
-    displayLevels.find((l) => l.status === "active")?.title ?? "Instant Database Verification";
+    displayLevels.find((l) => l.status === "active")?.title ?? "Quantum Key Distribution";
   const activeAlgorithm = (activeProject?.algorithm as string) ??
-    displayLevels.find((l) => l.status === "active")?.algorithm ?? "Deutsch–Jozsa";
+    displayLevels.find((l) => l.status === "active")?.algorithm ?? "BB84 Protocol";
   const activeProgress = (activeProject?.progress as number) ??
-    displayLevels.find((l) => l.status === "active")?.progress ?? 62;
+    displayLevels.find((l) => l.status === "active")?.progress ?? 0;
 
   const stats = data?.stats as Record<string, number> | undefined;
-  const challengesDone = stats?.challenges_completed ?? 14;
-  const projectsDone = stats?.projects_completed ?? 1;
-  const totalProjects = stats?.total_projects ?? 12;
+  const challengesDone = stats?.challenges_completed ?? 0;
+  const projectsDone = stats?.projects_completed ?? 0;
+  const totalProjects = stats?.total_projects ?? displayLevels.length;
 
   // Level role name for current level
   const currentLevelData = displayLevels.find((l) => l.n === currentLevel);
-  const levelRoleName = currentLevelData?.role ?? "Quantum Logic Designer";
+  const levelRoleName = currentLevelData?.role ?? "Security Analyst";
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
@@ -175,11 +177,11 @@ export default function Dashboard() {
 
       {/* stat row */}
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <Stat label="Weekly XP" value={<Count to={totalWeeklyXp} />} delta="+18% vs last week" />
-        <Stat label="Learning streak" value={<><Count to={streak} /> days</>} delta="Personal best" />
+        <Stat label="Weekly XP" value={<Count to={totalWeeklyXp} />} />
+        <Stat label="Learning streak" value={<><Count to={streak} /> {streak === 1 ? "day" : "days"}</>} />
         <Stat label="Concepts mastered" value={<Count to={projectsDone * 3} />} />
-        <Stat label="Challenges done" value={<Count to={challengesDone} />} delta="+3 this week" />
-        <Stat label="Current rank" value={<>#<Count to={6} /></>} delta="↑ 12 positions" />
+        <Stat label="Challenges done" value={<Count to={challengesDone} />} />
+        <Stat label="Completed Missions" value={<><Count to={projectsDone} /> / {totalProjects}</>} />
       </div>
 
       {/* journey */}

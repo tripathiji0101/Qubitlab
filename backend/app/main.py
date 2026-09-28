@@ -58,14 +58,16 @@ async def lifespan(app: FastAPI):
     logger.info("Starting %s (%s)", settings.APP_NAME, settings.ENVIRONMENT)
     _register_engines()
 
-    # Create tables (dev only — use Alembic in production)
-    if settings.ENVIRONMENT == "development":
+    # Ensure tables and initial curriculum data exist (safe & idempotent)
+    try:
         await init_db()
-        logger.info("Database tables initialized")
+        logger.info("Database tables verified")
 
-        # Run seed if tables are empty
         from app.seed.seed_data import seed_if_empty
         await seed_if_empty()
+        logger.info("Database seed check completed")
+    except Exception as e:
+        logger.warning("Database init/seed warning: %s", e)
 
     yield
     logger.info("Shutting down %s", settings.APP_NAME)

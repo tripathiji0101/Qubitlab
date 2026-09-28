@@ -53,15 +53,15 @@ export default function Profile() {
         ...(profileData.weakest_concepts || []).map((c) => [c.name, c.value, "violet" as const]),
       ]
     : [
-        ["Quantum Gates", 92, "cyan" as const],
-        ["Superposition", 88, "cyan" as const],
-        ["Optimization", 43, "violet" as const],
-        ["Quantum ML", 30, "violet" as const],
+        ["Quantum Gates", 0, "cyan" as const],
+        ["Superposition", 0, "cyan" as const],
+        ["Optimization", 0, "violet" as const],
+        ["Quantum ML", 0, "violet" as const],
       ];
 
-  const projectsCount = (profileData?.stats?.projects_completed as string | number) ?? "1 / 5";
-  const challengesCount = (profileData?.stats?.challenges_completed as string | number) ?? "14";
-  const avgScore = (profileData?.stats?.avg_score as string | number) ?? "87%";
+  const projectsCount = (profileData?.stats?.projects_completed as string | number) ?? "0";
+  const challengesCount = (profileData?.stats?.challenges_completed as string | number) ?? "0";
+  const avgScore = (profileData?.stats?.avg_score as string | number) ?? "—";
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-10 md:px-6">

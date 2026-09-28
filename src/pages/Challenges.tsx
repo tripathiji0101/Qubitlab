@@ -1,13 +1,45 @@
 import { Link } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, Badge, Button, Chip, cx } from "../components/ui";
-import { challenges, difficultyTone } from "../lib/data";
+import { challenges as defaultChallenges, difficultyTone } from "../lib/data";
+import { challenges as challengesApi, getAccessToken } from "../lib/api";
 
 const filters = ["All", "Beginner", "Intermediate", "Advanced"];
 
 export default function Challenges() {
   const [f, setF] = useState("All");
-  const list = challenges.filter((c) => f === "All" || c.difficulty === f);
+  const [challengeList, setChallengeList] = useState(defaultChallenges);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) return;
+    challengesApi
+      .list()
+      .then((res) => {
+        if (res && res.length > 0) {
+          setChallengeList((prev) =>
+            prev.map((c) => {
+              const apiMatch = res.find(
+                (r) => r.id === c.id || r.title.toLowerCase() === c.title.toLowerCase()
+              );
+              if (apiMatch) {
+                return {
+                  ...c,
+                  done: apiMatch.done,
+                  best: apiMatch.best,
+                  attempts: apiMatch.attempts,
+                  xp: apiMatch.xp || c.xp,
+                };
+              }
+              return c;
+            })
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const list = challengeList.filter((c) => f === "All" || c.difficulty === f);
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-10 md:px-6">
       <div className="flex flex-wrap items-end justify-between gap-4">

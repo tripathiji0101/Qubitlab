@@ -577,7 +577,14 @@ export default function Workspace() {
         if (res.mission_progress) {
           setLiveMissionProgress(res.mission_progress);
         }
-        if (res.student_state === "COMPLETED" && res.celebration && !missionAwarded) {
+        if (
+          res.student_state === "COMPLETED" &&
+          res.celebration &&
+          res.mission_progress &&
+          res.mission_progress.total_count > 0 &&
+          res.mission_progress.met_count === res.mission_progress.total_count &&
+          !missionAwarded
+        ) {
           setMissionAwarded(true);
           learning.completeProject(currentLevel.slug).catch(() => {});
         }
@@ -1989,7 +1996,7 @@ export default function Workspace() {
                                 studentState={m.student_state}
                               />
                             )}
-                            {(m.student_state === "COMPLETED" && m.celebration) && (
+                            {(m.student_state === "COMPLETED" && m.celebration && (!m.mission_progress || (m.mission_progress.total_count > 0 && m.mission_progress.met_count === m.mission_progress.total_count))) && (
                               <CelebrationBanner
                                 celebration={m.celebration}
                                 suggestedExperiment={m.suggested_experiment}

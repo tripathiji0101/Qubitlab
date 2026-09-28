@@ -1192,6 +1192,7 @@ export default function Workspace() {
               {roomParam && (
                 <CollabRoom
                   roomId={roomParam}
+                  circuit={{ placements, qubits }}
                   onCircuitSync={handleCollabCircuitSync}
                   getCircuit={getCircuitForCollab}
                   circuitRevisionRef={circuitRevisionRef}

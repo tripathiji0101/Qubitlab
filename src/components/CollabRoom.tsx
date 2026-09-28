@@ -40,6 +40,7 @@ function I({ d, size = 14 }: { d: string; size?: number }) {
 
 interface CollabRoomProps {
   roomId: string;
+  circuit?: { placements: unknown[]; qubits: number };
   onCircuitSync: (circuit: { placements: unknown[]; qubits: number }, revision: number) => void;
   getCircuit: () => { placements: unknown[]; qubits: number };
   circuitRevisionRef: React.MutableRefObject<number>;
@@ -81,6 +82,7 @@ const RTC_CONFIG: RTCConfiguration = {
 
 export default function CollabRoom({
   roomId,
+  circuit,
   onCircuitSync,
   getCircuit,
   circuitRevisionRef,
@@ -98,6 +100,13 @@ export default function CollabRoom({
   const [inviteFeedback, setInviteFeedback] = useState<string | null>(null);
   const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
   const [circuitError, setCircuitError] = useState<string | null>(null);
+
+  // ── Auto-Sync State (Google Slides / Docs style) ──
+  type SyncStatus = "saved" | "syncing" | "offline" | "conflict";
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("saved");
+  const isRemoteSyncRef = useRef<boolean>(false);
+  const lastSyncedHashRef = useRef<string>("");
+  const autoSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── WebRTC State ──
   const [callStatus, setCallStatus] = useState<CallStatus>("idle");
@@ -130,6 +139,8 @@ export default function CollabRoom({
   useEffect(() => {
     const unsub = onMessage("state_sync", (data) => {
       const sync = data as unknown as WSStateSync;
+      isRemoteSyncRef.current = true;
+      lastSyncedHashRef.current = JSON.stringify(sync.circuit);
       onCircuitSync(sync.circuit, sync.revision);
       circuitRevisionRef.current = sync.revision;
       setActiveMembers(sync.members);
@@ -137,6 +148,10 @@ export default function CollabRoom({
         const role = sync.role as "owner" | "editor" | "viewer";
         setMyRole(role);
         onRoleChange?.(role);
+      }
+      setSyncStatus(sync.conflict ? "conflict" : "saved");
+      if (sync.conflict) {
+        setTimeout(() => setSyncStatus("saved"), 3000);
       }
     });
     return unsub;
@@ -146,8 +161,11 @@ export default function CollabRoom({
   useEffect(() => {
     const unsub = onMessage("circuit_update", (data) => {
       const update = data as unknown as WSCircuitUpdate;
+      isRemoteSyncRef.current = true;
+      lastSyncedHashRef.current = JSON.stringify(update.circuit);
       onCircuitSync(update.circuit, update.revision);
       circuitRevisionRef.current = update.revision;
+      setSyncStatus("saved");
     });
     return unsub;
   }, [onMessage, onCircuitSync, circuitRevisionRef]);
@@ -157,6 +175,7 @@ export default function CollabRoom({
     const unsub = onMessage("circuit_ack", (data) => {
       const ack = data as unknown as WSCircuitAck;
       circuitRevisionRef.current = ack.revision;
+      setSyncStatus("saved");
     });
     return unsub;
   }, [onMessage, circuitRevisionRef]);
@@ -503,19 +522,72 @@ export default function CollabRoom({
     }
   };
 
-  // ── Circuit update trigger ──
+  // ── Automatic Real-time Auto-Sync Engine (Google Slides style) ──
+  useEffect(() => {
+    // If incoming remote change from another collaborator, don't echo back
+    if (isRemoteSyncRef.current) {
+      isRemoteSyncRef.current = false;
+      return;
+    }
+
+    if (myRole === "viewer") return;
+
+    if (wsState !== "connected") {
+      setSyncStatus("offline");
+      return;
+    }
+
+    const currentCircuit = circuit ?? getCircuit();
+    const currentHash = JSON.stringify(currentCircuit);
+
+    // Initial baseline recording
+    if (!lastSyncedHashRef.current) {
+      lastSyncedHashRef.current = currentHash;
+      return;
+    }
+
+    // No local changes detected
+    if (currentHash === lastSyncedHashRef.current) return;
+
+    // Immediately show "Saving..." (Google Docs / Slides style)
+    setSyncStatus("syncing");
+
+    if (autoSyncTimerRef.current) {
+      clearTimeout(autoSyncTimerRef.current);
+    }
+
+    // Debounce by 200ms to consolidate rapid clicks / drags into single seamless update
+    autoSyncTimerRef.current = setTimeout(() => {
+      send("circuit_update", {
+        circuit: currentCircuit,
+        revision: circuitRevisionRef.current,
+      });
+      lastSyncedHashRef.current = currentHash;
+    }, 200);
+
+    return () => {
+      if (autoSyncTimerRef.current) {
+        clearTimeout(autoSyncTimerRef.current);
+      }
+    };
+  }, [circuit, myRole, wsState, send, getCircuit, circuitRevisionRef]);
+
+  // ── Manual Circuit update trigger / fallback ──
   const sendCircuitUpdate = useCallback(() => {
     if (myRole === "viewer") {
       setCircuitError("Viewers have read-only access and cannot edit the circuit");
       setTimeout(() => setCircuitError(null), 3000);
       return;
     }
-    const circuit = getCircuit();
+    const currentCircuit = circuit ?? getCircuit();
+    const currentHash = JSON.stringify(currentCircuit);
+    setSyncStatus("syncing");
     send("circuit_update", {
-      circuit,
+      circuit: currentCircuit,
       revision: circuitRevisionRef.current,
     });
-  }, [send, getCircuit, circuitRevisionRef, myRole]);
+    lastSyncedHashRef.current = currentHash;
+  }, [send, circuit, getCircuit, circuitRevisionRef, myRole]);
 
   const sendChat = () => {
     if (!chatDraft.trim()) return;
@@ -709,21 +781,58 @@ export default function CollabRoom({
             <I d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" size={14} />
           </button>
 
-          {/* Push Circuit Update Button */}
+          {/* Real-time Google Slides Style Auto-Sync Status Indicator */}
           <button
             type="button"
             onClick={sendCircuitUpdate}
             disabled={isViewer}
             className={cx(
-              "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all select-none",
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all select-none cursor-pointer shadow-xs",
               isViewer
-                ? "opacity-40 cursor-not-allowed bg-bg-panel border-line text-txt-faint"
-                : "bg-ok/10 hover:bg-ok/25 text-ok border-ok/30 cursor-pointer shadow-xs"
+                ? "opacity-50 cursor-not-allowed bg-bg-panel border-line text-txt-faint"
+                : syncStatus === "syncing"
+                ? "bg-accent-primary/15 text-accent-primary border-accent-primary/30 animate-pulse"
+                : syncStatus === "conflict"
+                ? "bg-warn/15 text-warn border-warn/30"
+                : syncStatus === "offline"
+                ? "bg-danger/15 text-danger border-danger/30"
+                : "bg-ok/10 hover:bg-ok/20 text-ok border-ok/30"
             )}
-            title={isViewer ? "Viewers cannot push circuit changes" : "Push your circuit update to all collaborators"}
+            title={
+              isViewer
+                ? "Viewers have read-only access"
+                : syncStatus === "syncing"
+                ? "Saving changes to room in real-time..."
+                : syncStatus === "conflict"
+                ? "Conflict resolved — synchronized with room"
+                : syncStatus === "offline"
+                ? "Disconnected from room"
+                : "All changes automatically saved (click to force sync)"
+            }
           >
-            <I d="M12 19V5M5 12l7-7 7 7" size={13} />
-            <span>Sync Circuit</span>
+            {syncStatus === "syncing" ? (
+              <>
+                <span className="inline-block h-2 w-2 rounded-full bg-accent-primary animate-ping" />
+                <span>Saving...</span>
+              </>
+            ) : syncStatus === "conflict" ? (
+              <>
+                <span className="text-[10px]">⚠️</span>
+                <span>Synced</span>
+              </>
+            ) : syncStatus === "offline" ? (
+              <>
+                <span className="inline-block h-2 w-2 rounded-full bg-danger" />
+                <span>Offline</span>
+              </>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-ok">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Saved</span>
+              </>
+            )}
           </button>
         </div>
       </div>

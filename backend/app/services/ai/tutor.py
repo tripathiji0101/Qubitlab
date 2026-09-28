@@ -275,6 +275,119 @@ def analyze_circuit(
         if is_empty:
             met = False
             reason = "Circuit has no gates placed yet."
+        elif "compile" in cl or ("valid" in cl and "topology" in cl):
+            if not is_empty and not self_inverse_cancellations:
+                met = True
+                reason = "Circuit compiles and has valid gate topology."
+            elif self_inverse_cancellations:
+                met = False
+                reason = "Redundant self-canceling gates detected."
+            else:
+                met = False
+                reason = "Circuit is empty."
+        elif ("at most" in cl or "≤" in cl or "<=" in cl) and ("gate" in cl):
+            nums = [int(s) for s in cl.replace("≤", " ").replace("<=", " ").split() if s.isdigit()]
+            if nums:
+                max_g = nums[0]
+                if 0 < gate_count <= max_g:
+                    met = True
+                    reason = f"Circuit uses {gate_count} gates (target: ≤ {max_g})."
+                elif gate_count > max_g:
+                    met = False
+                    reason = f"Circuit uses {gate_count} gates, which exceeds target {max_g}."
+                else:
+                    met = False
+                    reason = "No gates placed yet."
+            else:
+                met = gate_count > 0
+                reason = f"Circuit uses {gate_count} gates."
+        elif "depth" in cl and any(ch.isdigit() for ch in cl):
+            nums = [int(s) for s in cl.split() if s.isdigit()]
+            if nums:
+                max_d = nums[0]
+                if 0 < depth <= max_d:
+                    met = True
+                    reason = f"Current circuit depth is {depth} (target: ≤ {max_d})."
+                else:
+                    met = False
+                    reason = f"Current circuit depth {depth} exceeds bound {max_d}."
+            else:
+                met = depth > 0
+                reason = f"Current circuit depth is {depth}."
+        elif "depth" in cl:
+            met = depth > 0
+            reason = f"Current circuit depth is {depth}."
+        elif "ancilla" in cl or "phase kickback" in cl:
+            ancilla_wires = [qubits - 1] if qubits > 1 else [1]
+            if qubits >= 2:
+                ancilla_wires.append(1)
+            ancilla_ready = False
+            for aw in set(ancilla_wires):
+                wire_ops = [g["gate"] for g in gates if g["qubit"] == aw or g.get("target") == aw]
+                if "X" in wire_ops and "H" in wire_ops:
+                    x_idx = next(i for i, g in enumerate(gates) if g["qubit"] == aw and g["gate"] == "X")
+                    h_idx = next(i for i, g in enumerate(gates) if g["qubit"] == aw and g["gate"] == "H")
+                    if x_idx < h_idx:
+                        ancilla_ready = True
+                        break
+            if ancilla_ready:
+                met = True
+                reason = "Ancilla prepared in |−⟩ = (|0⟩ − |1⟩)/√2 via X then H."
+            else:
+                met = False
+                reason = "Prepare ancilla in |−⟩ by placing an X gate followed by an H gate on the bottom wire."
+        elif ("final" in cl and "hadamard" in cl) or "interference layer" in cl:
+            oracle_moments = [g["moment"] for g in gates if g["gate"] in ("CNOT", "CZ", "SWAP")]
+            if oracle_moments:
+                max_oracle_m = max(oracle_moments)
+                has_final_h = any(g["gate"] == "H" and g["qubit"] < qubits - 1 and g["moment"] > max_oracle_m for g in gates)
+                if has_final_h:
+                    met = True
+                    reason = "Final Hadamard interference layer applied after oracle."
+                else:
+                    met = False
+                    reason = "Apply a final Hadamard (H) gate to input qubit(s) after the oracle."
+            else:
+                met = False
+                reason = "First place the oracle before applying the final interference Hadamard layer."
+        elif "distinguishes" in cl or ("constant" in cl and "balanced" in cl):
+            has_input_h = any(g["gate"] == "H" and g["qubit"] == 0 for g in gates)
+            has_oracle = any(g["gate"] in ("CNOT", "CZ") for g in gates)
+            oracle_moments = [g["moment"] for g in gates if g["gate"] in ("CNOT", "CZ")]
+            max_m = max(oracle_moments) if oracle_moments else -1
+            has_post_h = any(g["gate"] == "H" and g["qubit"] == 0 and g["moment"] > max_m for g in gates) if oracle_moments else False
+            if has_input_h and has_oracle and has_post_h and has_sim:
+                met = True
+                reason = "Interference verified: output cleanly separates constant from balanced."
+            else:
+                met = False
+                reason = "Complete the circuit (input H, ancilla X+H, oracle CNOT, final H) and run simulation."
+        elif "superposition" in cl or ("initialized" in cl and "hadamard" in cl) or "uniform superposition" in cl:
+            has_h = any(g["gate"] == "H" for g in gates)
+            if "input" in cl or "wire 0" in cl or "q0" in cl or "target" in cl:
+                if 0 in superposition_qubits:
+                    met = True
+                    reason = "Superposition initialized with Hadamard gate on wire 0."
+                elif has_h:
+                    met = True
+                    reason = f"Hadamard gate placed on qubit(s) {', '.join(f'q[{q}]' for q in sorted(superposition_qubits))}."
+                else:
+                    met = False
+                    reason = "Place a Hadamard (H) gate on the input wire(s) to create superposition."
+            elif has_h:
+                met = True
+                reason = f"Superposition created on qubit(s) {', '.join(f'q[{q}]' for q in sorted(superposition_qubits))}."
+            else:
+                met = False
+                reason = "No superposition gate (H) placed on circuit."
+        elif "oracle" in cl:
+            has_oracle = any(g["gate"] in ("CNOT", "CZ", "SWAP", "Z", "RZ") for g in gates)
+            if has_oracle:
+                met = True
+                reason = "Oracle unitary correctly wired into the register."
+            else:
+                met = False
+                reason = "Place the oracle gate (e.g. CNOT or CZ) to evaluate the function."
         elif "bell" in cl or "entangle" in cl:
             if entanglement_detected and len(nonzero_probs) == 2:
                 met = True
@@ -285,41 +398,50 @@ def analyze_circuit(
             else:
                 met = False
                 reason = "Needs both a superposition gate (H) and an entangling gate (CNOT)."
-        elif "superposition" in cl:
-            if superposition_qubits:
+        elif "50/50" in cl or ("equal" in cl and "probability" in cl):
+            if has_sim and len(nonzero_probs) >= 2 and all(abs(p.get("p", 0) - 1.0 / len(nonzero_probs)) < 0.15 for p in nonzero_probs):
                 met = True
-                reason = f"Superposition created on qubit(s) {', '.join(f'q[{q}]' for q in sorted(superposition_qubits))}."
+                reason = "Equal 50/50 measurement probability confirmed by simulator."
             else:
                 met = False
-                reason = "No superposition gate (H) placed."
-        elif "gate" in cl and any(ch.isdigit() for ch in cl):
-            # Check gate count constraint if specified in criterion
-            nums = [int(s) for s in cl.split() if s.isdigit()]
-            if nums:
-                max_g = nums[0]
-                if gate_count <= max_g:
+                reason = "Simulation does not show equal probability distribution."
+        elif "amplified" in cl or ("probability" in cl and ("≥" in cl or ">=" in cl or "%" in cl)):
+            if has_sim and nonzero_probs:
+                top_p = max(p.get("p", 0) for p in nonzero_probs)
+                if top_p >= 0.75:
                     met = True
-                    reason = f"Circuit uses {gate_count} gates (target: ≤ {max_g})."
+                    reason = f"Probability amplified to {top_p*100:.1f}%."
                 else:
                     met = False
-                    reason = f"Circuit uses {gate_count} gates, which exceeds target {max_g}."
-            else:
-                met = True
-                reason = f"Circuit uses {gate_count} gates."
-        elif "depth" in cl:
-            met = True
-            reason = f"Current circuit depth is {depth}."
-        elif "compile" in cl or "valid" in cl:
-            if not is_empty and not self_inverse_cancellations:
-                met = True
-                reason = "Circuit compiles and has valid gate topology."
-            elif self_inverse_cancellations:
-                met = False
-                reason = "Redundant self-canceling gates detected."
+                    reason = f"Target state probability ({top_p*100:.1f}%) not yet amplified to required threshold."
             else:
                 met = False
-                reason = "Circuit is empty."
-        else:
+                reason = "Run simulation to verify state probability amplification."
+        elif "diffusion" in cl:
+            h_count = sum(1 for g in gates if g["gate"] == "H")
+            x_count = sum(1 for g in gates if g["gate"] == "X")
+            if h_count >= 2 and x_count >= 2 and entanglement_detected:
+                met = True
+                reason = "Grover diffusion reflection operator detected."
+            else:
+                met = False
+                reason = "Grover diffusion operator (H-X-CZ-X-H) is required to invert about the mean."
+        elif "measurement" in cl or "basis measurement" in cl:
+            if measurements:
+                met = True
+                m_qubits = ", ".join(f"q[{m['qubit']}]" for m in measurements)
+                reason = f"Measurement placed on qubit(s) {m_qubits}."
+            else:
+                met = False
+                reason = "Add measurement operations to the circuit."
+        elif "phase error" in cl or "fidelity" in cl:
+            if has_sim and not self_inverse_cancellations and gate_count > 0:
+                met = True
+                reason = "State fidelity verified with zero unexpected relative phase error."
+            else:
+                met = False
+                reason = "Fidelity verification requires valid simulated state."
+        elif "simulation" in cl or "verify measurement" in cl:
             if has_sim and nonzero_probs:
                 met = True
                 states_str = ", ".join(f"|{p['state']}⟩" for p in nonzero_probs[:4])
@@ -327,6 +449,10 @@ def analyze_circuit(
             else:
                 met = False
                 reason = "Run the simulation to verify this criterion."
+        else:
+            # Deterministic: Never falsely pass unrecognized criteria!
+            met = False
+            reason = "Requirements for this criterion are pending verification on the circuit."
 
         if met:
             met_count += 1

@@ -577,7 +577,7 @@ export default function Workspace() {
         if (res.mission_progress) {
           setLiveMissionProgress(res.mission_progress);
         }
-        if ((res.celebration || res.student_state === "COMPLETED") && !missionAwarded) {
+        if (res.student_state === "COMPLETED" && res.celebration && !missionAwarded) {
           setMissionAwarded(true);
           learning.completeProject(currentLevel.slug).catch(() => {});
         }
@@ -1982,13 +1982,13 @@ export default function Workspace() {
                         {m.role === "ai" ? (
                           <div className="space-y-3">
                             <MathMarkdown content={m.text} />
-                            {m.mission_progress && (
+                            {m.mission_progress && (m.intent === "VERIFY" || m.intent === "DEBUG" || m.student_state === "COMPLETED") && (
                               <MissionProgressCard
                                 progress={m.mission_progress}
                                 studentState={m.student_state}
                               />
                             )}
-                            {(m.celebration || m.student_state === "COMPLETED") && (
+                            {(m.student_state === "COMPLETED" && m.celebration) && (
                               <CelebrationBanner
                                 celebration={m.celebration}
                                 suggestedExperiment={m.suggested_experiment}

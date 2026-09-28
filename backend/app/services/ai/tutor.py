@@ -399,7 +399,8 @@ def analyze_circuit(
                 met = False
                 reason = "Needs both a superposition gate (H) and an entangling gate (CNOT)."
         elif "50/50" in cl or ("equal" in cl and "probability" in cl):
-            if has_sim and len(nonzero_probs) >= 2 and all(abs(p.get("p", 0) - 1.0 / len(nonzero_probs)) < 0.15 for p in nonzero_probs):
+            expected_pct = 100.0 / len(nonzero_probs) if nonzero_probs else 0
+            if has_sim and len(nonzero_probs) >= 2 and all(abs((p.get("p", 0) if p.get("p", 0) > 1.0 else p.get("p", 0) * 100.0) - expected_pct) < 15.0 for p in nonzero_probs):
                 met = True
                 reason = "Equal 50/50 measurement probability confirmed by simulator."
             else:
@@ -408,12 +409,13 @@ def analyze_circuit(
         elif "amplified" in cl or ("probability" in cl and ("≥" in cl or ">=" in cl or "%" in cl)):
             if has_sim and nonzero_probs:
                 top_p = max(p.get("p", 0) for p in nonzero_probs)
-                if top_p >= 0.75:
+                top_p_pct = top_p if top_p > 1.0 else top_p * 100.0
+                if top_p_pct >= 75.0:
                     met = True
-                    reason = f"Probability amplified to {top_p*100:.1f}%."
+                    reason = f"Probability amplified to {top_p_pct:.1f}%."
                 else:
                     met = False
-                    reason = f"Target state probability ({top_p*100:.1f}%) not yet amplified to required threshold."
+                    reason = f"Target state probability ({top_p_pct:.1f}%) not yet amplified to required threshold."
             else:
                 met = False
                 reason = "Run simulation to verify state probability amplification."
@@ -434,6 +436,32 @@ def analyze_circuit(
             else:
                 met = False
                 reason = "Add measurement operations to the circuit."
+        elif "gate" in cl and any(ch.isdigit() for ch in cl):
+            nums = [int(s) for s in cl.split() if s.isdigit()]
+            if nums:
+                max_g = nums[0]
+                if gate_count <= max_g:
+                    met = True
+                    reason = f"Circuit uses {gate_count} gates (target: ≤ {max_g})."
+                else:
+                    met = False
+                    reason = f"Circuit uses {gate_count} gates, which exceeds target {max_g}."
+            else:
+                met = True
+                reason = f"Circuit uses {gate_count} gates."
+        elif "depth" in cl:
+            met = True
+            reason = f"Current circuit depth is {depth}."
+        elif "compile" in cl or "valid" in cl:
+            if not is_empty and not self_inverse_cancellations:
+                met = True
+                reason = "Circuit compiles and has valid gate topology."
+            elif self_inverse_cancellations:
+                met = False
+                reason = "Redundant self-canceling gates detected."
+            else:
+                met = False
+                reason = "Circuit is empty."
         elif "phase error" in cl or "fidelity" in cl:
             if has_sim and not self_inverse_cancellations and gate_count > 0:
                 met = True

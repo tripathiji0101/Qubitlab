@@ -55,7 +55,7 @@ interface ChatMsg {
   created_at: string;
 }
 
-type CallStatus = "idle" | "calling" | "incoming" | "connected";
+type CallStatus = "idle" | "calling" | "incoming" | "connecting" | "connected";
 
 function getIceServers(): RTCIceServer[] {
   const envIce = import.meta.env.VITE_ICE_SERVERS;
@@ -72,6 +72,10 @@ function getIceServers(): RTCIceServer[] {
   return [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun3.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:19302" },
+    { urls: "stun:stun.cloudflare.com:3478" },
   ];
 }
 
@@ -112,6 +116,7 @@ export default function CollabRoom({
   const [callStatus, setCallStatus] = useState<CallStatus>("idle");
   const [callerInfo, setCallerInfo] = useState<{ id: string; name: string; initials: string } | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [audioBlocked, setAudioBlocked] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
   const [remoteMuted, setRemoteMuted] = useState<Record<string, boolean>>({});
 
@@ -274,7 +279,56 @@ export default function CollabRoom({
     setCallStatus("idle");
     setCallerInfo(null);
     setIsMuted(false);
+    setAudioBlocked(false);
   }, []);
+
+  const setupPeerConnection = useCallback((pc: RTCPeerConnection, targetUserId?: string) => {
+    pc.ontrack = (event) => {
+      console.log("[WebRTC] Received remote audio track:", event.track.kind);
+      const stream = event.streams[0] || (event.track ? new MediaStream([event.track]) : null);
+      if (remoteAudioRef.current && stream) {
+        remoteAudioRef.current.srcObject = stream;
+        remoteAudioRef.current.volume = 1.0;
+        remoteAudioRef.current.play().then(() => {
+          setAudioBlocked(false);
+          console.log("[WebRTC] Remote audio playback active");
+        }).catch((err) => {
+          console.warn("[WebRTC] Autoplay blocked, requiring click to enable audio:", err);
+          setAudioBlocked(true);
+        });
+      }
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        const payload: Record<string, unknown> = { candidate: event.candidate.toJSON() };
+        if (targetUserId) {
+          payload.target_user_id = targetUserId;
+        }
+        send("voice_ice_candidate", payload);
+      }
+    };
+
+    const handleStateChange = () => {
+      const conn = pc.connectionState;
+      const ice = pc.iceConnectionState;
+      console.log(`[WebRTC state] connectionState=${conn}, iceConnectionState=${ice}`);
+      if (conn === "connected" || ice === "connected" || ice === "completed") {
+        setCallStatus("connected");
+        setMicError(null);
+      } else if (conn === "connecting" || ice === "checking") {
+        setCallStatus((prev) => (prev === "idle" ? prev : "connecting"));
+      } else if (conn === "failed" || ice === "failed") {
+        setMicError("Voice call connection failed. Ensure both peers have network access and mic permissions.");
+        cleanupVoiceCall();
+      } else if (conn === "closed") {
+        cleanupVoiceCall();
+      }
+    };
+
+    pc.onconnectionstatechange = handleStateChange;
+    pc.oniceconnectionstatechange = handleStateChange;
+  }, [send, cleanupVoiceCall]);
 
   // ── WebRTC Signaling Event Handlers ──
   useEffect(() => {
@@ -305,14 +359,29 @@ export default function CollabRoom({
 
     const unsubAnswer = onMessage("voice_answer", async (data) => {
       const answerData = data as unknown as WSVoiceAnswer;
+      if (answerData.from_user_id) {
+        setCallerInfo({
+          id: answerData.from_user_id,
+          name: answerData.from_user_name || "Room Member",
+          initials: (data as any).from_user_initials || answerData.from_user_name?.slice(0, 2).toUpperCase() || "U",
+        });
+      }
       if (pcRef.current) {
         try {
           await pcRef.current.setRemoteDescription(new RTCSessionDescription(answerData.answer));
           while (pendingCandidatesRef.current.length > 0) {
             const cand = pendingCandidatesRef.current.shift()!;
-            await pcRef.current.addIceCandidate(new RTCIceCandidate(cand)).catch(() => {});
+            try {
+              await pcRef.current.addIceCandidate(new RTCIceCandidate(cand));
+            } catch (err) {
+              console.warn("[WebRTC] Error adding queued ICE candidate:", err);
+            }
           }
-          setCallStatus("connected");
+          if (pcRef.current.connectionState === "connected" || pcRef.current.iceConnectionState === "connected") {
+            setCallStatus("connected");
+          } else {
+            setCallStatus("connecting");
+          }
         } catch (e) {
           console.error("Error setting remote description from answer:", e);
         }
@@ -322,8 +391,12 @@ export default function CollabRoom({
     const unsubIce = onMessage("voice_ice_candidate", async (data) => {
       const iceData = data as unknown as WSVoiceIceCandidate;
       if (iceData.candidate) {
-        if (pcRef.current && pcRef.current.remoteDescription) {
-          await pcRef.current.addIceCandidate(new RTCIceCandidate(iceData.candidate)).catch(() => {});
+        if (pcRef.current && pcRef.current.remoteDescription && pcRef.current.remoteDescription.type) {
+          try {
+            await pcRef.current.addIceCandidate(new RTCIceCandidate(iceData.candidate));
+          } catch (e) {
+            console.warn("[WebRTC] Error adding ICE candidate:", e);
+          }
         } else {
           pendingCandidatesRef.current.push(iceData.candidate);
         }
@@ -331,7 +404,7 @@ export default function CollabRoom({
     });
 
     const unsubDeclined = onMessage("voice_declined", () => {
-      if (callStatus === "calling") {
+      if (callStatus === "calling" || callStatus === "connecting") {
         cleanupVoiceCall();
         setMicError("Call declined by participant");
         setTimeout(() => setMicError(null), 4000);
@@ -380,35 +453,22 @@ export default function CollabRoom({
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
       localStreamRef.current = stream;
       setIsMuted(false);
 
       const pc = new RTCPeerConnection(RTC_CONFIG);
       pcRef.current = pc;
 
+      setupPeerConnection(pc);
+
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-      pc.ontrack = (event) => {
-        if (remoteAudioRef.current && event.streams[0]) {
-          remoteAudioRef.current.srcObject = event.streams[0];
-          remoteAudioRef.current.play().catch(() => {});
-        }
-      };
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          send("voice_ice_candidate", { candidate: event.candidate.toJSON() });
-        }
-      };
-
-      pc.onconnectionstatechange = () => {
-        if (pc.connectionState === "connected") {
-          setCallStatus("connected");
-        } else if (pc.connectionState === "failed" || pc.connectionState === "closed") {
-          cleanupVoiceCall();
-        }
-      };
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
@@ -420,7 +480,7 @@ export default function CollabRoom({
       const error = err as Error;
       console.error("Mic error:", error);
       if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-        setMicError("Microphone permission denied");
+        setMicError("Microphone permission denied. Please allow mic in browser settings.");
       } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
         setMicError("Microphone not found on this device");
       } else {
@@ -438,44 +498,32 @@ export default function CollabRoom({
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
       localStreamRef.current = stream;
       setIsMuted(false);
 
       const pc = new RTCPeerConnection(RTC_CONFIG);
       pcRef.current = pc;
 
+      setupPeerConnection(pc, callerInfo?.id);
+
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-      pc.ontrack = (event) => {
-        if (remoteAudioRef.current && event.streams[0]) {
-          remoteAudioRef.current.srcObject = event.streams[0];
-          remoteAudioRef.current.play().catch(() => {});
-        }
-      };
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          send("voice_ice_candidate", {
-            candidate: event.candidate.toJSON(),
-            target_user_id: callerInfo?.id,
-          });
-        }
-      };
-
-      pc.onconnectionstatechange = () => {
-        if (pc.connectionState === "connected") {
-          setCallStatus("connected");
-        } else if (pc.connectionState === "failed" || pc.connectionState === "closed") {
-          cleanupVoiceCall();
-        }
-      };
 
       if (pendingOfferRef.current) {
         await pc.setRemoteDescription(new RTCSessionDescription(pendingOfferRef.current));
         while (pendingCandidatesRef.current.length > 0) {
           const cand = pendingCandidatesRef.current.shift()!;
-          await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(() => {});
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(cand));
+          } catch (e) {
+            console.warn("[WebRTC] Error adding pending ICE candidate:", e);
+          }
         }
       }
 
@@ -487,12 +535,12 @@ export default function CollabRoom({
         target_user_id: callerInfo?.id,
       });
 
-      setCallStatus("connected");
+      setCallStatus("connecting");
     } catch (err: unknown) {
       const error = err as Error;
       console.error("Mic error on join:", error);
       if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-        setMicError("Microphone permission denied");
+        setMicError("Microphone permission denied. Please allow mic in browser settings.");
       } else {
         setMicError(error.message || "Could not access microphone");
       }
@@ -640,8 +688,13 @@ export default function CollabRoom({
 
   return (
     <div className="flex flex-col border-b border-line bg-bg-surface/90 text-txt">
-      {/* Hidden audio element for receiving WebRTC audio */}
-      <audio ref={remoteAudioRef} autoPlay playsInline />
+      {/* Audio element for receiving WebRTC remote audio */}
+      <audio
+        ref={remoteAudioRef}
+        autoPlay
+        playsInline
+        onPlay={() => setAudioBlocked(false)}
+      />
 
       {/* Main Collab Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-gradient-to-r from-accent-primary/10 via-bg-surface/60 to-accent-blue/5">
@@ -691,7 +744,7 @@ export default function CollabRoom({
               })}
             </div>
             <span className="text-[11px] text-txt-dim font-medium">
-              {activeMembers.length} online
+              {Math.max(activeMembers.length, 1)} online
             </span>
           </button>
         </div>
@@ -737,13 +790,44 @@ export default function CollabRoom({
             </div>
           )}
 
+          {callStatus === "connecting" && (
+            <div className="flex items-center gap-1.5 bg-accent-blue/15 border border-accent-blue/30 px-2.5 py-1 rounded-md shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-accent-blue animate-ping" />
+              <span className="text-[11px] font-bold text-accent-blue flex items-center gap-1">
+                <I d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" size={12} />
+                Connecting Audio...
+              </span>
+              <button
+                type="button"
+                onClick={endVoiceCall}
+                className="ml-1 text-[10px] text-txt-dim hover:text-white underline cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
           {callStatus === "connected" && (
             <div className="flex items-center gap-1.5 bg-ok/15 border border-ok/30 px-2.5 py-1 rounded-md shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-ok animate-ping" />
+              <span className="h-2 w-2 rounded-full bg-ok animate-pulse" />
               <span className="text-[11px] font-bold text-ok flex items-center gap-1">
                 <I d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" size={12} />
-                Connected
+                In Call {callerInfo?.name ? `(${callerInfo.name})` : "(2 in call)"}
               </span>
+              {audioBlocked && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (remoteAudioRef.current) {
+                      remoteAudioRef.current.play().then(() => setAudioBlocked(false)).catch(() => {});
+                    }
+                  }}
+                  className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent-blue text-white hover:bg-accent-blue/90 animate-bounce cursor-pointer shadow-xs"
+                  title="Click to enable sound if browser blocked autoplay"
+                >
+                  🔊 Enable Sound
+                </button>
+              )}
               <button
                 type="button"
                 onClick={toggleMute}

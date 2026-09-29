@@ -133,7 +133,11 @@ function getWsBaseUrl(): string {
       }
       return envUrl;
     }
-    // Default to current host if in browser
+    // In local development on HTTP, default to backend port 8000:
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "ws://localhost:8000";
+    }
+    // Default to current host if in browser (production CloudFront / ALB)
     return `${isHttps ? "wss:" : "ws:"}//${window.location.host}`;
   }
   return envUrl || "ws://localhost:8000";
